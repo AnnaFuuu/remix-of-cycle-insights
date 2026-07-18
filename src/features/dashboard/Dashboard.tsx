@@ -2,6 +2,7 @@ import * as React from "react";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
 import { ProactiveInsights } from "@/components/agent/ProactiveInsights";
+import { useI18n } from "@/lib/i18n";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { StatCard } from "@/components/hnhh/StatCard";
 import { PhaseBadge } from "@/components/hnhh/PhaseBadge";
@@ -16,6 +17,7 @@ import type { HormonalPhase } from "@/lib/hormonal/types";
 
 export function Dashboard() {
   const { ready, entries } = useHormonalStore();
+  const { t } = useI18n();
   if (!ready) return <PageSkeleton />;
   if (!entries.length) {
     return (
@@ -97,36 +99,36 @@ export function Dashboard() {
   return (
     <div className="pb-10">
       <PageHeader
-        eyebrow="Dashboard"
-        title="Physiological snapshot"
-        description="Cycle-aware telemetry console with phase-shaded trend visualization."
+        eyebrow={t("dash.eyebrow")}
+        title={t("dash.title")}
+        description={t("dash.desc")}
         actions={<PhaseBadge phase={latest.phase} />}
       />
       <ProactiveInsights />
       <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
         <StatCard
-          label="Cycle day"
+          label={t("dash.cycleDay")}
           value={latest.cycleDay}
-          hint={<>Phase: <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span></>}
+          hint={<>{t("dash.phase")}: <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span></>}
           icon={<Sparkles className="h-4 w-4" />}
         />
         <StatCard
-          label="BBT · 7d avg"
+          label={t("dash.bbt7")}
           value={`${bbtNow.toFixed(2)}°`}
-          hint={`Latest ${latest.objective.bbt?.toFixed(2) ?? "-"}°C`}
+          hint={`${t("dash.bbt.latest")} ${latest.objective.bbt?.toFixed(2) ?? "-"}°C`}
           icon={<Thermometer className="h-4 w-4" />}
         />
         <StatCard
-          label="Mood · 7d"
+          label={t("dash.mood7")}
           value={`${moodNow.toFixed(1)}/10`}
-          hint={`${(moodNow - moodPrev).toFixed(1)} vs prior week`}
+          hint={`${(moodNow - moodPrev).toFixed(1)} ${t("dash.vsPrior")}`}
           trend={moodNow > moodPrev ? "up" : moodNow < moodPrev ? "down" : "flat"}
           icon={moodNow >= moodPrev ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
         />
         <StatCard
-          label="Sleep quality · 7d"
+          label={t("dash.sleep7")}
           value={`${sleepNow.toFixed(1)}/10`}
-          hint={`${(sleepNow - sleepPrev).toFixed(1)} vs prior week`}
+          hint={`${(sleepNow - sleepPrev).toFixed(1)} ${t("dash.vsPrior")}`}
           trend={sleepNow > sleepPrev ? "up" : sleepNow < sleepPrev ? "down" : "flat"}
           icon={<Moon className="h-4 w-4" />}
         />
