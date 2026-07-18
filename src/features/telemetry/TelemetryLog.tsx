@@ -2,6 +2,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
+import { NLQuickLog } from "@/components/agent/NLQuickLog";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { PhaseBadge } from "@/components/hnhh/PhaseBadge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -76,6 +77,8 @@ export function TelemetryLog() {
           <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> New entry</Button>
         }
       />
+
+      <div className="px-6 pt-4 sm:px-8"><NLQuickLog /></div>
 
       <div className="grid grid-cols-1 gap-3 px-6 py-4 sm:flex sm:flex-wrap sm:items-center sm:px-8">
         <div className="flex items-center gap-2">

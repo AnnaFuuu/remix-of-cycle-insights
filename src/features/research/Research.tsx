@@ -15,6 +15,10 @@ import { BASELINE } from "@/lib/hormonal/analytics";
 import { generateCohort } from "@/lib/hormonal/seed";
 import { PHASE_ACCENT } from "@/lib/hormonal/phase";
 import { Copy, Download, ShieldCheck, Database } from "lucide-react";
+import { Sparkles, Loader2, Bot } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { generateNarrative } from "@/lib/agent/actions.functions";
+import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
@@ -22,6 +26,21 @@ const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal
 export function Research() {
   const { ready, entries, profile, setProfile } = useHormonalStore();
   const [cohort] = React.useState(() => generateCohort(40, 28, 14));
+  const narrateFn = useServerFn(generateNarrative);
+  const [narrative, setNarrative] = React.useState<string | null>(null);
+  const [narrating, setNarrating] = React.useState(false);
+
+  const runNarrative = async () => {
+    setNarrating(true);
+    try {
+      const ctx = buildSnapshot(entries, profile, 30);
+      const res = await narrateFn({ data: { context: ctx, recordCount: entries.length, schemaVersion: EXPORT_SCHEMA_VERSION } });
+      setNarrative(res.narrative);
+    } catch (err) {
+      toast.error("Copilot narrative failed");
+      console.error(err);
+    } finally { setNarrating(false); }
+  };
 
   if (!ready) return <PageSkeleton />;
 
@@ -112,11 +131,21 @@ export function Research() {
               <CardDescription>Strict schema · {packets.length} records · {profile.researchOptIn ? "active" : "gated"}</CardDescription>
             </div>
             <div className="flex shrink-0 gap-2">
+              <Button size="sm" variant="outline" onClick={runNarrative} disabled={narrating || !profile.researchOptIn} className="gap-1">
+                {narrating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Narrative
+              </Button>
               <Button size="sm" variant="outline" onClick={copyJson} className="gap-1"><Copy className="h-3.5 w-3.5" /> Copy</Button>
               <Button size="sm" onClick={downloadJson} className="gap-1"><Download className="h-3.5 w-3.5" /> Export</Button>
             </div>
           </CardHeader>
           <CardContent>
+            {narrative && (
+              <div className="mb-3 rounded-lg border border-primary/30 bg-primary/[0.04] p-3 text-xs leading-relaxed text-foreground">
+                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-primary"><Bot className="h-3 w-3" /> Copilot research narrative</div>
+                <div className="whitespace-pre-wrap">{narrative}</div>
+              </div>
+            )}
             <pre className="max-h-[380px] overflow-auto rounded-lg border bg-secondary/40 p-4 font-mono text-[11px] leading-relaxed text-foreground">
               {previewJson.split("\n").slice(0, 300).join("\n")}
             </pre>
