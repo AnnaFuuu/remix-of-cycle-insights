@@ -15,6 +15,8 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { HormonalStoreProvider } from "@/lib/hormonal/store";
 import { Toaster } from "@/components/ui/sonner";
+import { CopilotProvider } from "@/components/agent/CopilotProvider";
+import { CopilotDrawer } from "@/components/agent/CopilotDrawer";
 
 function NotFoundComponent() {
   return (
@@ -123,7 +125,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <HormonalStoreProvider>
-        <SidebarProvider>
+        <CopilotProvider>
+          <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
             <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
@@ -136,7 +139,9 @@ function RootComponent() {
               <Outlet />
             </main>
           </SidebarInset>
-        </SidebarProvider>
+          </SidebarProvider>
+          <CopilotDrawer />
+        </CopilotProvider>
         <Toaster />
       </HormonalStoreProvider>
     </QueryClientProvider>
