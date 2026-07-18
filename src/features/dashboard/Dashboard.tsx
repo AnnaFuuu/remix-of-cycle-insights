@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
+import { ProactiveInsights } from "@/components/agent/ProactiveInsights";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { StatCard } from "@/components/hnhh/StatCard";
 import { PhaseBadge } from "@/components/hnhh/PhaseBadge";
@@ -101,6 +102,7 @@ export function Dashboard() {
         description="Cycle-aware telemetry console with phase-shaded trend visualization."
         actions={<PhaseBadge phase={latest.phase} />}
       />
+      <ProactiveInsights />
       <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
         <StatCard
           label="Cycle day"
