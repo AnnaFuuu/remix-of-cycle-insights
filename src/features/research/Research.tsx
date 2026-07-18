@@ -18,6 +18,7 @@ import { Copy, Download, ShieldCheck, Database } from "lucide-react";
 import { Sparkles, Loader2, Bot } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateNarrative } from "@/lib/agent/actions.functions";
+import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
@@ -32,8 +33,8 @@ export function Research() {
   const runNarrative = async () => {
     setNarrating(true);
     try {
-      const packets = entries.map((e) => toExportPacket(e, profile));
-      const res = await narrateFn({ data: { records: packets, alias: profile.alias } });
+      const ctx = buildSnapshot(entries, profile, 30);
+      const res = await narrateFn({ data: { context: ctx, recordCount: entries.length, schemaVersion: EXPORT_SCHEMA_VERSION } });
       setNarrative(res.narrative);
     } catch (err) {
       toast.error("Copilot narrative failed");
