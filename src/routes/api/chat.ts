@@ -4,7 +4,7 @@ import { createLovableGateway, COPILOT_MODEL } from "@/lib/ai-gateway.server";
 import { buildTools } from "@/lib/agent/tools.server";
 import { systemPrompt, type AgentContextSnapshot } from "@/lib/agent/context";
 
-type ChatBody = { messages?: UIMessage[]; context?: AgentContextSnapshot };
+type ChatBody = { messages?: UIMessage[]; context?: AgentContextSnapshot; locale?: string };
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -21,9 +21,12 @@ export const Route = createFileRoute("/api/chat")({
         const model = gateway(COPILOT_MODEL);
         const tools = buildTools(body.context);
 
+        const langLine = body.locale === "zh"
+          ? "IMPORTANT: Reply to the user in Simplified Chinese (简体中文), regardless of the input language. Keep tool arguments and JSON in English."
+          : "IMPORTANT: Reply to the user in English.";
         const result = streamText({
           model,
-          system: systemPrompt(body.context),
+          system: systemPrompt(body.context) + "\n\n" + langLine,
           messages: await convertToModelMessages(body.messages),
           tools,
           stopWhen: stepCountIs(50),

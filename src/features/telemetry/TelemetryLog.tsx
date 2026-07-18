@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
 import { NLQuickLog } from "@/components/agent/NLQuickLog";
+import { useI18n } from "@/lib/i18n";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { PhaseBadge } from "@/components/hnhh/PhaseBadge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -37,6 +38,7 @@ function emptyEntry(cycleLength: number, lutealLength: number): TelemetryEntry {
 
 export function TelemetryLog() {
   const { ready, entries, profile, upsertEntry, deleteEntry } = useHormonalStore();
+  const { t } = useI18n();
   const [editing, setEditing] = React.useState<TelemetryEntry | null>(null);
   const [open, setOpen] = React.useState(false);
   const [filterPhase, setFilterPhase] = React.useState<"all" | HormonalPhase>("all");
@@ -70,11 +72,11 @@ export function TelemetryLog() {
   return (
     <div className="pb-10">
       <PageHeader
-        eyebrow="Telemetry"
-        title="Daily telemetry log"
-        description="Structured capture of subjective state, objective measurements, and optional biomarker overrides."
+        eyebrow={t("tel.eyebrow")}
+        title={t("tel.title")}
+        description={t("tel.desc")}
         actions={
-          <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> New entry</Button>
+          <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> {t("tel.new")}</Button>
         }
       />
 
@@ -82,7 +84,7 @@ export function TelemetryLog() {
 
       <div className="grid grid-cols-1 gap-3 px-6 py-4 sm:flex sm:flex-wrap sm:items-center sm:px-8">
         <div className="flex items-center gap-2">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Phase</Label>
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("tel.filter.phase")}</Label>
           <Select value={filterPhase} onValueChange={(v) => setFilterPhase(v as typeof filterPhase)}>
             <SelectTrigger className="h-8 w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -95,7 +97,7 @@ export function TelemetryLog() {
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Symptoms</Label>
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">{t("tel.filter.symptoms")}</Label>
           <Select value={filterSymptom} onValueChange={(v) => setFilterSymptom(v as typeof filterSymptom)}>
             <SelectTrigger className="h-8 w-44"><SelectValue /></SelectTrigger>
             <SelectContent>

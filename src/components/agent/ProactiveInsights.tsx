@@ -5,10 +5,12 @@ import { Bot, ShieldAlert, HeartPulse, Sparkles } from "lucide-react";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { generateInsights } from "@/lib/agent/insights";
 import { useCopilot } from "./CopilotProvider";
+import { useI18n } from "@/lib/i18n";
 
 export function ProactiveInsights() {
   const { entries, profile } = useHormonalStore();
   const { ask } = useCopilot();
+  const { t } = useI18n();
   const insights = React.useMemo(() => generateInsights(entries, profile), [entries, profile]);
   if (!insights.length) return null;
 
@@ -20,8 +22,8 @@ export function ProactiveInsights() {
             <Bot className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-sm font-semibold">Copilot proactive insights</div>
-            <div className="text-[11px] text-muted-foreground">Auto-generated from your telemetry vs. population baseline.</div>
+            <div className="text-sm font-semibold">{t("insights.title")}</div>
+            <div className="text-[11px] text-muted-foreground">{t("insights.sub")}</div>
           </div>
         </div>
         <div className="grid gap-2 md:grid-cols-3">
@@ -37,7 +39,7 @@ export function ProactiveInsights() {
                   <p className="text-[11px] leading-relaxed text-muted-foreground">{ins.body}</p>
                 </div>
                 <Button size="sm" variant="ghost" className="mt-2 h-7 justify-start px-2 text-[11px] text-primary hover:text-primary" onClick={() => ask(ins.ask)}>
-                  Ask Copilot →
+                  {t("insights.ask")}
                 </Button>
               </div>
             );

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { buildSnapshot } from "@/lib/agent/context";
 import { useCopilot } from "./CopilotProvider";
+import { useI18n } from "@/lib/i18n";
 
 const MSG_KEY = "hnhh.copilot.messages.v1";
 
@@ -24,6 +25,7 @@ function loadPersisted(): UIMessage[] {
 export function CopilotDrawer() {
   const { open, setOpen, consumePrefill } = useCopilot();
   const { entries, profile } = useHormonalStore();
+  const { t, locale } = useI18n();
 
   const snapshotRef = React.useRef(buildSnapshot(entries, profile));
   React.useEffect(() => { snapshotRef.current = buildSnapshot(entries, profile); }, [entries, profile]);
@@ -33,9 +35,9 @@ export function CopilotDrawer() {
   const transport = React.useMemo(
     () => new DefaultChatTransport({
       api: "/api/chat",
-      prepareSendMessagesRequest: ({ messages }) => ({ body: { messages, context: snapshotRef.current } }),
+      prepareSendMessagesRequest: ({ messages }) => ({ body: { messages, context: snapshotRef.current, locale } }),
     }),
-    [],
+    [locale],
   );
 
   const { messages, sendMessage, status, setMessages, error } = useChat({
@@ -101,11 +103,11 @@ export function CopilotDrawer() {
             <Bot className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 text-sm font-semibold">Cycle Copilot <Badge variant="outline" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">beta</Badge></div>
-            <div className="truncate text-[11px] text-muted-foreground">Cycle-aware · tool-using · on-device data</div>
+            <div className="flex items-center gap-2 text-sm font-semibold">{t("copilot.title")} <Badge variant="outline" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">beta</Badge></div>
+            <div className="truncate text-[11px] text-muted-foreground">{t("copilot.sub")}</div>
           </div>
-          <Button size="icon" variant="ghost" onClick={clear} title="New conversation"><RefreshCw className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => setOpen(false)} title="Close"><X className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={clear} title={t("copilot.new")}><RefreshCw className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setOpen(false)} title={t("copilot.close")}><X className="h-4 w-4" /></Button>
         </div>
 
         <ScrollArea className="flex-1">
@@ -115,7 +117,7 @@ export function CopilotDrawer() {
             {(status === "submitted" || status === "streaming") && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                <span>Thinking…</span>
+                <span>{t("copilot.thinking")}</span>
               </div>
             )}
             {error && <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">{error.message}</div>}
@@ -130,12 +132,12 @@ export function CopilotDrawer() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
               rows={2}
-              placeholder="Ask about your cycle, symptoms, correlations, baselines…"
+              placeholder={t("copilot.placeholder")}
               className="min-h-[60px] resize-none border-0 bg-transparent p-1 text-sm shadow-none focus-visible:ring-0"
               disabled={status === "streaming" || status === "submitted"}
             />
             <div className="mt-1 flex items-center justify-between">
-              <div className="text-[10px] text-muted-foreground">Not a medical device. Data stays on-device except this chat request.</div>
+              <div className="text-[10px] text-muted-foreground">{t("copilot.disclaimer")}</div>
               <Button size="icon" onClick={submit} disabled={!input.trim() || status === "streaming" || status === "submitted"} className="h-8 w-8">
                 <Send className="h-4 w-4" />
               </Button>
@@ -150,15 +152,11 @@ export function CopilotDrawer() {
 }
 
 function EmptyState({ onPick }: { onPick: (q: string) => void }) {
-  const prompts = [
-    "Summarize my last 14 days of telemetry.",
-    "How does my mood correlate with sleep quality?",
-    "Flag any anomalies in my recent entries.",
-    "What phase am I in and what's typical for it?",
-  ];
+  const { t } = useI18n();
+  const prompts = [t("copilot.prompt.1"), t("copilot.prompt.2"), t("copilot.prompt.3"), t("copilot.prompt.4")];
   return (
     <div className="rounded-xl border bg-secondary/30 p-4">
-      <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4 text-primary" /> Try a starter prompt</div>
+      <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4 text-primary" /> {t("copilot.starters")}</div>
       <div className="grid gap-2">
         {prompts.map((p) => (
           <button key={p} onClick={() => onPick(p)} className="rounded-md border bg-background px-3 py-2 text-left text-xs text-foreground hover:border-primary/40 hover:bg-primary/5">
