@@ -10,10 +10,12 @@ import { parseEntryFromText, type EntryDraft } from "@/lib/agent/actions.functio
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { computePhase } from "@/lib/hormonal/phase";
 import type { TelemetryEntry } from "@/lib/hormonal/types";
+import { useI18n } from "@/lib/i18n";
 
 export function NLQuickLog() {
   const { profile, upsertEntry, entries } = useHormonalStore();
   const parse = useServerFn(parseEntryFromText);
+  const { t } = useI18n();
   const [text, setText] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [draft, setDraft] = React.useState<EntryDraft | null>(null);
@@ -25,7 +27,7 @@ export function NLQuickLog() {
       const result = await parse({ data: { text: text.trim() } });
       setDraft(result);
     } catch (err) {
-      toast.error("Copilot couldn't parse that entry");
+      toast.error(t("nl.parsed.err"));
       console.error(err);
     } finally { setBusy(false); }
   };
@@ -70,7 +72,7 @@ export function NLQuickLog() {
       createdAt: "", updatedAt: "",
     };
     upsertEntry(entry);
-    toast.success("Entry created from natural language");
+    toast.success(t("nl.parsed.ok"));
     setDraft(null); setText("");
   };
 
@@ -79,7 +81,7 @@ export function NLQuickLog() {
       <CardContent className="p-4">
         <div className="mb-2 flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground"><Bot className="h-4 w-4" /></div>
-          <div className="text-sm font-semibold">Log with natural language</div>
+          <div className="text-sm font-semibold">{t("nl.title")}</div>
           <Badge variant="outline" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">agent</Badge>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -87,23 +89,23 @@ export function NLQuickLog() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") run(); }}
-            placeholder='e.g. "slept 6h poorly, bad cramps 7/10, mood 4, headache came back"'
+            placeholder={t("nl.placeholder")}
             className="flex-1"
             disabled={busy}
           />
           <Button onClick={run} disabled={busy || !text.trim()} className="gap-1">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Parse
+            {t("nl.parse")}
           </Button>
         </div>
 
         {draft && (
           <div className="mt-3 rounded-lg border bg-background p-3">
             <div className="mb-2 flex items-center justify-between">
-              <div className="text-xs font-semibold">Proposed entry <span className="ml-2 font-mono text-[10px] text-muted-foreground">confidence {(draft.confidence * 100).toFixed(0)}%</span></div>
+              <div className="text-xs font-semibold">{t("nl.proposed")} <span className="ml-2 font-mono text-[10px] text-muted-foreground">{t("nl.confidence")} {(draft.confidence * 100).toFixed(0)}%</span></div>
               <div className="flex gap-1">
-                <Button size="sm" variant="ghost" onClick={() => setDraft(null)}><X className="mr-1 h-3.5 w-3.5" /> Discard</Button>
-                <Button size="sm" onClick={approve}><Check className="mr-1 h-3.5 w-3.5" /> Approve & save</Button>
+                <Button size="sm" variant="ghost" onClick={() => setDraft(null)}><X className="mr-1 h-3.5 w-3.5" /> {t("nl.discard")}</Button>
+                <Button size="sm" onClick={approve}><Check className="mr-1 h-3.5 w-3.5" /> {t("nl.approve")}</Button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] sm:grid-cols-4">
