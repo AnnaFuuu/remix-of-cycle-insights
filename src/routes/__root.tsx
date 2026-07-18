@@ -17,6 +17,8 @@ import { HormonalStoreProvider } from "@/lib/hormonal/store";
 import { Toaster } from "@/components/ui/sonner";
 import { CopilotProvider } from "@/components/agent/CopilotProvider";
 import { CopilotDrawer } from "@/components/agent/CopilotDrawer";
+import { I18nProvider, useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function NotFoundComponent() {
   return (
@@ -125,25 +127,33 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <HormonalStoreProvider>
-        <CopilotProvider>
-          <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
-              <SidebarTrigger />
-              <div className="text-sm font-medium text-muted-foreground">
-                Cycloscope · research-grade hormonal telemetry
-              </div>
-            </header>
-            <main className="min-h-[calc(100vh-3.5rem)]">
-              <Outlet />
-            </main>
-          </SidebarInset>
-          </SidebarProvider>
-          <CopilotDrawer />
-        </CopilotProvider>
+        <I18nProvider>
+          <CopilotProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <AppHeader />
+                <main className="min-h-[calc(100vh-3.5rem)]">
+                  <Outlet />
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
+            <CopilotDrawer />
+          </CopilotProvider>
+        </I18nProvider>
         <Toaster />
       </HormonalStoreProvider>
     </QueryClientProvider>
+  );
+}
+
+function AppHeader() {
+  const { t } = useI18n();
+  return (
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
+      <SidebarTrigger />
+      <div className="text-sm font-medium text-muted-foreground">{t("app.tagline")}</div>
+      <div className="ml-auto"><LanguageSwitcher /></div>
+    </header>
   );
 }
