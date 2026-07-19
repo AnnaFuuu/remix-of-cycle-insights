@@ -33,7 +33,7 @@ const en: Dict = {
 
   // Dashboard
   "dash.eyebrow": "Dashboard",
-  "dash.title": "Physiological snapshot",
+  "dash.title": "Know your menstrual phase",
   "dash.desc": "Cycle-aware telemetry console with phase-shaded trend visualization.",
   "dash.cycleDay": "Cycle day",
   "dash.phase": "Phase",
