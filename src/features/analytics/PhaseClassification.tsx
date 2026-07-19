@@ -100,9 +100,10 @@ export function PhaseClassification() {
 }
 
 function Results({ data }: { data: ClassificationResult }) {
-  const winner = data.algos.find((a) => a.algo === data.bestAlgo) ?? data.algos[0];
+  const algos = Array.isArray(data.algos) ? data.algos : [];
+  const winner = algos.find((a) => a.algo === data.bestAlgo) ?? algos[0];
   const winnerCv = hasCV(winner?.cv) ? winner.cv : null;
-  const hasAnyCv = data.algos.some((a) => hasCV(a.cv));
+  const hasAnyCv = algos.some((a) => hasCV(a.cv));
   if (!winner) {
     return (
       <div className="rounded-lg border border-dashed border-border/60 bg-muted/30 p-4 text-xs text-muted-foreground">
@@ -115,7 +116,7 @@ function Results({ data }: { data: ClassificationResult }) {
       <div className="grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
         <Kv label={`CV pool days${data.cvFolds ? ` (${data.cvFolds}-fold)` : ""}`} value={fmtCount(data.poolN ?? ((data.trainN ?? 0) + (data.valN ?? 0)))} />
         <Kv label="Held-out test days" value={fmtCount(data.testN)} />
-        <Kv label="Predictors" value={String(data.predictors.length)} />
+        <Kv label="Predictors" value={String(data.predictors?.length ?? 0)} />
         <Kv label="Pre-split (train / val)" value={`${fmtCount(data.trainN)} / ${fmtCount(data.valN)}`} />
       </div>
 
@@ -146,7 +147,7 @@ function Results({ data }: { data: ClassificationResult }) {
               </tr>
             </thead>
             <tbody className="font-mono">
-              {data.algos.map((a) => {
+              {algos.map((a) => {
                 const best = a.algo === data.bestAlgo;
                 return (
                   <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
@@ -315,6 +316,22 @@ function Kv({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+function hasCV(cv: unknown): cv is AlgoResult["cv"] {
+  if (!cv || typeof cv !== "object") return false;
+  const candidate = cv as Partial<AlgoResult["cv"]>;
+  return (
+    Array.isArray(candidate.perFold) &&
+    typeof candidate.meanAccuracy === "number" &&
+    typeof candidate.stdAccuracy === "number" &&
+    typeof candidate.meanMacroF1 === "number" &&
+    typeof candidate.stdMacroF1 === "number" &&
+    typeof candidate.meanLogLoss === "number" &&
+    typeof candidate.stdLogLoss === "number"
+  );
+}
+function fmtCount(n: number | null | undefined) {
+  return typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—";
+}
 function fmtTrip(acc: number, f1: number, ll: number) {
   return `${acc.toFixed(3)} / ${f1.toFixed(3)} / ${ll.toFixed(3)}`;
 }
@@ -336,7 +353,7 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
           {data.cvFolds}-fold cross-validation · per-fold macro-F1 on out-of-fold participants
         </div>
         <div className="text-[11px] text-muted-foreground">
-          Stratified by participant over the train + validation pool ({data.poolN.toLocaleString()} labeled days).
+          Stratified by participant over the train + validation pool ({fmtCount(data.poolN)} labeled days).
           Test set stayed held out for every fold.
         </div>
       </div>
@@ -352,7 +369,7 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
             </tr>
           </thead>
           <tbody className="font-mono">
-            {data.algos.map((a) => {
+            {data.algos.filter((a) => hasCV(a.cv)).map((a) => {
               const best = a.algo === data.bestAlgo;
               return (
                 <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
