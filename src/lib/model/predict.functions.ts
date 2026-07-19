@@ -46,7 +46,7 @@ export interface PhaseModelInfo {
   classes: string[];
   nPredictors: number;
   nTrain: number;
-  metrics: unknown;
+  metrics: Record<string, unknown> | null;
   trainedAt: string;
 }
 
