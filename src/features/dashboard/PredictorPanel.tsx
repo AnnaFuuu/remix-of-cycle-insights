@@ -312,36 +312,14 @@ function FieldGroup({
         {fields.map((f) => {
           const s = fieldsState[f.key];
           return (
-            <div key={f.key} className="space-y-2">
-              <div className="flex items-baseline justify-between">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  {t(f.label as never)}
-                  {f.unit && <span className="ml-1 opacity-60">({f.unit})</span>}
-                  {!f.allowNA && <span className="ml-1 text-destructive">*</span>}
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step={f.step ?? "1"}
-                  placeholder={s.na ? "N/A" : f.placeholder}
-                  value={s.value}
-                  disabled={s.na}
-                  onChange={(e) => setValue(f.key, e.target.value)}
-                  className="h-9"
-                />
-                {f.allowNA && (
-                  <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={s.na}
-                      onCheckedChange={(c) => setNA(f.key, Boolean(c))}
-                    />
-                    N/A
-                  </label>
-                )}
-              </div>
-            </div>
+            <FieldInput
+              key={f.key}
+              f={f}
+              s={s}
+              setValue={setValue}
+              setNA={setNA}
+              t={t}
+            />
           );
         })}
         {children}
