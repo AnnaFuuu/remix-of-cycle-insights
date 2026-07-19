@@ -208,7 +208,7 @@ function Results({ data }: { data: ClassificationResult }) {
             {c}: {data.classCounts.train[c]} / {data.classCounts.val[c]} / {data.classCounts.test[c]}
           </span>
         ))}
-        <div className="mt-1 text-[10px]">{data.notes} · Trained {new Date(data.refreshedAt).toLocaleString()}</div>
+        <div className="mt-1 text-[10px]">{data.notes} · Trained {data.refreshedAt ? new Date(data.refreshedAt).toLocaleString() : "—"}</div>
       </div>
     </>
   );
@@ -371,6 +371,7 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
           <tbody className="font-mono">
             {data.algos.filter((a) => hasCV(a.cv)).map((a) => {
               const best = a.algo === data.bestAlgo;
+              const cv = a.cv;
               return (
                 <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
                   <td className="px-3 py-1.5">
@@ -378,11 +379,11 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
                       {a.label}
                     </span>
                   </td>
-                  {a.cv.perFold.map((f) => (
+                  {cv.perFold.map((f) => (
                     <td key={f.fold} className="px-3 py-1.5 text-right tabular-nums">{f.macroF1.toFixed(3)}</td>
                   ))}
                   <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
-                    {fmtMS(a.cv.meanMacroF1, a.cv.stdMacroF1)}
+                    {fmtMS(cv.meanMacroF1, cv.stdMacroF1)}
                   </td>
                 </tr>
               );
