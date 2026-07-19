@@ -314,14 +314,27 @@ function metrics(y: number[], yhat: number[]): Metrics {
 // -----------------------------------------------------------------------------
 // Predictor construction
 // -----------------------------------------------------------------------------
-const EXCLUDE_FROM_PREDICTORS = new Set([
-  "phase", "lh", "estrogen", "pdg", "sleep_start", "sleep_end",
-  "participant_id", "day_in_study",
-]);
+// Keep the hormone-regressor input space aligned 1:1 with the Dashboard's
+// PredictorInput (see src/lib/model/predict.functions.ts → UI_TO_FEATURE), so
+// training inputs == inference inputs. Every field here is something the user
+// can actually type in; no silent median-fallback columns.
+const HORMONE_PREDICTORS: string[] = [
+  "bmi",
+  "wrist_temp_overnight_mean",
+  "hrv_mean",
+  "resp_rate_full",
+  "sleep_score",
+  "sleep_asleep_min",
+  "stress_score",
+  "glucose_mean",
+  "cramps",
+  "bloating",
+];
 
 function selectPredictors(): string[] {
-  return FEATURE_DEFS.map((d) => d.key).filter((k) => !EXCLUDE_FROM_PREDICTORS.has(k));
+  return HORMONE_PREDICTORS.slice();
 }
+
 
 function toNum(v: unknown): number | null {
   if (v === null || v === undefined) return null;
