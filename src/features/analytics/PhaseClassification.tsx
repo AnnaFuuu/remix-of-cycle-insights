@@ -100,14 +100,23 @@ export function PhaseClassification() {
 }
 
 function Results({ data }: { data: ClassificationResult }) {
-  const winner = data.algos.find((a) => a.algo === data.bestAlgo)!;
+  const winner = data.algos.find((a) => a.algo === data.bestAlgo) ?? data.algos[0];
+  const winnerCv = hasCV(winner?.cv) ? winner.cv : null;
+  const hasAnyCv = data.algos.some((a) => hasCV(a.cv));
+  if (!winner) {
+    return (
+      <div className="rounded-lg border border-dashed border-border/60 bg-muted/30 p-4 text-xs text-muted-foreground">
+        No classification results are available yet. Click <span className="font-medium text-foreground">Train models</span> to generate a fresh run.
+      </div>
+    );
+  }
   return (
     <>
       <div className="grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
-        <Kv label={`CV pool days${data.cvFolds ? ` (${data.cvFolds}-fold)` : ""}`} value={(data.poolN ?? (data.trainN + data.valN)).toLocaleString()} />
-        <Kv label="Held-out test days" value={data.testN.toLocaleString()} />
+        <Kv label={`CV pool days${data.cvFolds ? ` (${data.cvFolds}-fold)` : ""}`} value={fmtCount(data.poolN ?? ((data.trainN ?? 0) + (data.valN ?? 0)))} />
+        <Kv label="Held-out test days" value={fmtCount(data.testN)} />
         <Kv label="Predictors" value={String(data.predictors.length)} />
-        <Kv label="Pre-split (train / val)" value={`${data.trainN.toLocaleString()} / ${data.valN.toLocaleString()}`} />
+        <Kv label="Pre-split (train / val)" value={`${fmtCount(data.trainN)} / ${fmtCount(data.valN)}`} />
       </div>
 
       <div className="rounded-lg border border-border/60">
@@ -115,10 +124,10 @@ function Results({ data }: { data: ClassificationResult }) {
           <span className="text-sm font-semibold tracking-tight">Algorithm comparison</span>
           <div className="flex items-center gap-1.5 text-[11px]">
             <Trophy className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-muted-foreground">Winner{winner.cv ? " (mean CV macro-F1)" : ""}:</span>
+            <span className="text-muted-foreground">Winner{winnerCv ? " (mean CV macro-F1)" : ""}:</span>
             <span className={`rounded border px-1.5 py-0.5 font-medium ${ALGO_STYLE[winner.algo]}`}>{winner.label}</span>
             <span className="ml-2 tabular-nums text-muted-foreground">
-              {winner.cv ? <>CV F1 <span className="font-semibold text-foreground">{winner.cv.meanMacroF1.toFixed(3)} ± {winner.cv.stdMacroF1.toFixed(3)}</span>{" · "}</> : null}
+              {winnerCv ? <>CV F1 <span className="font-semibold text-foreground">{fmtMS(winnerCv.meanMacroF1, winnerCv.stdMacroF1)}</span>{" · "}</> : null}
               test F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
               {" · "}test acc <span className="font-semibold text-foreground">{winner.accuracy.test.toFixed(3)}</span>
             </span>
@@ -150,7 +159,7 @@ function Results({ data }: { data: ClassificationResult }) {
                     <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{fmtHp(a.hyperparams)}</td>
                     <td className="px-3 py-1.5 text-right text-muted-foreground"><Timer className="mr-0.5 inline h-3 w-3" />{a.fitMs} ms</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.train, a.macroF1.train, a.logLoss.train)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{a.cv ? fmtCV(a.cv) : "—"}</td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{hasCV(a.cv) ? fmtCV(a.cv) : "—"}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.test, a.macroF1.test, a.logLoss.test)}</td>
                   </tr>
                 );
@@ -160,7 +169,7 @@ function Results({ data }: { data: ClassificationResult }) {
         </div>
       </div>
 
-      {data.cvFolds ? <CVFoldsCard data={data} /> : null}
+      {data.cvFolds && hasAnyCv ? <CVFoldsCard data={data} /> : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <PerClassCard winner={winner} classes={data.classes} />
