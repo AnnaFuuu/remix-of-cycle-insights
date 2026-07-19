@@ -235,7 +235,7 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     console.error("[classification] failed to persist winner", e);
   }
 
-  return {
+  const payload: ClassificationResult = {
     classes: CLASSES,
     predictors,
     trainN: tr.y.length, valN: va.y.length, testN: te.y.length,
@@ -247,4 +247,9 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     notes: "Winner selected by validation macro-F1; class weights = inverse train frequency; imputation uses train-set medians.",
     savedModelId,
   };
+  try {
+    const { savePipelineRun } = await import("./pipeline-runs.functions");
+    await savePipelineRun("classification", payload);
+  } catch (e) { console.error("[classification] savePipelineRun failed", e); }
+  return payload;
 });
