@@ -128,6 +128,10 @@ export function Laboratory() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="px-6 pb-2 sm:px-8">
+        <UserLabsPanel />
+      </div>
     </div>
   );
 }
