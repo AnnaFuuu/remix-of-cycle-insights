@@ -21,7 +21,9 @@ import { generateNarrative } from "@/lib/agent/actions.functions";
 import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
 import { DATASETS } from "@/lib/clinical/datasets";
-import { SleepDatasetsPanel } from "@/components/physionet/SleepDatasetsPanel";
+import { McphasesImportPanel } from "@/components/mcphases/McphasesImportPanel";
+import { IngestRunsTable } from "@/components/mcphases/IngestRunsTable";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -31,6 +33,7 @@ export function Research() {
   const narrateFn = useServerFn(generateNarrative);
   const [narrative, setNarrative] = React.useState<string | null>(null);
   const [narrating, setNarrating] = React.useState(false);
+  const qc = useQueryClient();
 
   const runNarrative = async () => {
     setNarrating(true);
@@ -306,8 +309,9 @@ export function Research() {
         </Card>
       </div>
 
-      <div className="px-6 sm:px-8">
-        <SleepDatasetsPanel variant="import" />
+      <div className="space-y-6 px-6 sm:px-8">
+        <McphasesImportPanel onIngested={() => qc.invalidateQueries({ queryKey: ["mcphases", "overview"] })} />
+        <IngestRunsTable />
       </div>
     </div>
   );

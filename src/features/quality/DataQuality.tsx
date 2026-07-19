@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
 import { buildQualityReport } from "@/lib/clinical/quality";
-import { SleepDatasetsPanel } from "@/components/physionet/SleepDatasetsPanel";
+import { TableCoverageGrid } from "@/components/mcphases/TableCoverageGrid";
 
 export function DataQuality() {
   const { ready, entries } = useHormonalStore();
@@ -135,7 +135,7 @@ export function DataQuality() {
       </div>
 
       <div className="px-6 sm:px-8">
-        <SleepDatasetsPanel variant="quality" />
+        <TableCoverageGrid />
       </div>
     </div>
   );
