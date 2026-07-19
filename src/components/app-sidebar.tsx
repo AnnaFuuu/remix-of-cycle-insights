@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, LineChart, FlaskConical, Settings, HeartPulse, TestTube, Watch, Dna, ShieldAlert, Brain, Lightbulb, Bot } from "lucide-react";
+import { Activity, LayoutDashboard, LineChart, FlaskConical, Settings, HeartPulse, TestTube, Watch, Dna, ShieldAlert } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,6 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/lib/i18n";
-import { useCopilot } from "@/components/agent/CopilotProvider";
 import { useResearcherMode } from "@/lib/researcher-mode";
 
 const groups = [
@@ -40,13 +39,6 @@ const groups = [
     ],
   },
   {
-    label: "nav.group.ai",
-    items: [
-      { key: "nav.model", url: "/model", icon: Brain },
-      { key: "nav.xai", url: "/xai", icon: Lightbulb },
-    ],
-  },
-  {
     label: "nav.group.research",
     items: [
       { key: "nav.research", url: "/research", icon: FlaskConical },
@@ -58,7 +50,7 @@ const groups = [
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { t } = useI18n();
-  const { setOpen: setCopilotOpen } = useCopilot();
+  
   const { isResearcher } = useResearcherMode();
   const visibleGroups = groups.filter((g) => g.label !== "nav.group.modelTraining" || isResearcher);
   return (
@@ -94,14 +86,6 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                   );
                 })}
-                {g.label === "nav.group.ai" && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setCopilotOpen(true)} tooltip={t("nav.copilot")}>
-                      <Bot className="h-4 w-4" />
-                      <span>{t("nav.copilot")}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
