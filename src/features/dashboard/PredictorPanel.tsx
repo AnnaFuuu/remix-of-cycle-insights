@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
 import type { PredictorInput } from "@/lib/prediction/types";
-import { FlaskConical, Activity, User, Sparkles } from "lucide-react";
+import { FlaskConical, Activity, User, Sparkles, HelpCircle } from "lucide-react";
 
 type NumericKey = Exclude<keyof PredictorInput, "cramps" | "bloating">;
 type OrdinalKey = "cramps" | "bloating";
@@ -31,6 +31,7 @@ interface FieldSpec {
   placeholder?: string;
   step?: string;
   allowNA: boolean;
+  info?: string;
 }
 
 const demographics: FieldSpec[] = [
@@ -45,7 +46,7 @@ const endocrine: FieldSpec[] = [
 
 const wearable: FieldSpec[] = [
   { key: "wristTempDelta", label: "predictor.wristTempDelta", unit: "°C vs baseline", placeholder: "e.g. +0.35", step: "0.01", allowNA: true },
-  { key: "restingHR", label: "predictor.restingHR", unit: "bpm", placeholder: "e.g. 62", allowNA: true },
+  { key: "restingHR", label: "predictor.restingHR", unit: "bpm", placeholder: "e.g. 62", allowNA: true, info: "resting heart rate" },
   { key: "hrv", label: "predictor.hrv", unit: "ms", placeholder: "e.g. 48", allowNA: true },
   { key: "respiratoryRate", label: "predictor.respRate", unit: "br/min", placeholder: "e.g. 15", step: "0.1", allowNA: true },
   { key: "sleepScore", label: "predictor.sleepScore", unit: "0–100", placeholder: "e.g. 78", allowNA: true },
@@ -311,39 +312,82 @@ function FieldGroup({
         {fields.map((f) => {
           const s = fieldsState[f.key];
           return (
-            <div key={f.key} className="space-y-2">
-              <div className="flex items-baseline justify-between">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  {t(f.label as never)}
-                  {f.unit && <span className="ml-1 opacity-60">({f.unit})</span>}
-                  {!f.allowNA && <span className="ml-1 text-destructive">*</span>}
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  step={f.step ?? "1"}
-                  placeholder={s.na ? "N/A" : f.placeholder}
-                  value={s.value}
-                  disabled={s.na}
-                  onChange={(e) => setValue(f.key, e.target.value)}
-                  className="h-9"
-                />
-                {f.allowNA && (
-                  <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={s.na}
-                      onCheckedChange={(c) => setNA(f.key, Boolean(c))}
-                    />
-                    N/A
-                  </label>
-                )}
-              </div>
-            </div>
+            <FieldInput
+              key={f.key}
+              f={f}
+              s={s}
+              setValue={setValue}
+              setNA={setNA}
+              t={t}
+            />
           );
         })}
         {children}
+      </div>
+    </div>
+  );
+}
+
+function FieldInput({
+  f,
+  s,
+  setValue,
+  setNA,
+  t,
+}: {
+  f: FieldSpec;
+  s: FieldState;
+  setValue: (k: NumericKey, v: string) => void;
+  setNA: (k: NumericKey, na: boolean) => void;
+  t: (k: never) => string;
+}) {
+  const [showInfo, setShowInfo] = React.useState(false);
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between">
+        <Label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+          {t(f.label as never)}
+          {f.unit && <span className="ml-1 opacity-60">({f.unit})</span>}
+          {!f.allowNA && <span className="ml-1 text-destructive">*</span>}
+          {f.info && (
+            <button
+              type="button"
+              onClick={() => setShowInfo((v) => !v)}
+              className="ml-1 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="More info"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </Label>
+      </div>
+      {f.info && showInfo && (
+        <div className="relative">
+          <div className="absolute left-0 top-1 z-10 w-max max-w-[16rem] rounded-md border border-border/60 bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm">
+            {f.info}
+          </div>
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          inputMode="decimal"
+          step={f.step ?? "1"}
+          placeholder={s.na ? "N/A" : f.placeholder}
+          value={s.value}
+          disabled={s.na}
+          onChange={(e) => setValue(f.key, e.target.value)}
+          className="h-9"
+        />
+        {f.allowNA && (
+          <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <Checkbox
+              checked={s.na}
+              onCheckedChange={(c) => setNA(f.key, Boolean(c))}
+            />
+            N/A
+          </label>
+        )}
       </div>
     </div>
   );
