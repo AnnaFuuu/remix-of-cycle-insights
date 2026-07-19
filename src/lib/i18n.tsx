@@ -141,7 +141,7 @@ const zh: Dict = {
   "lang.zh": "中文",
 
   "dash.eyebrow": "仪表盘",
-  "dash.title": "生理状态快照",
+  "dash.title": "了解你的月经周期阶段",
   "dash.desc": "结合周期相位阴影的趋势可视化控制台。",
   "dash.cycleDay": "周期第几天",
   "dash.phase": "相位",
@@ -245,7 +245,7 @@ const fr: Dict = {
   "lang.zh": "中文",
 
   "dash.eyebrow": "Tableau de bord",
-  "dash.title": "Aperçu physiologique",
+  "dash.title": "Connaître votre phase menstruelle",
   "dash.desc": "Console de télémétrie sensible au cycle avec visualisation des tendances par phase.",
   "dash.cycleDay": "Jour du cycle",
   "dash.phase": "Phase",
@@ -349,7 +349,7 @@ const it: Dict = {
   "lang.zh": "中文",
 
   "dash.eyebrow": "Dashboard",
-  "dash.title": "Istantanea fisiologica",
+  "dash.title": "Conosci la tua fase mestruale",
   "dash.desc": "Console di telemetria consapevole del ciclo con visualizzazione per fase.",
   "dash.cycleDay": "Giorno del ciclo",
   "dash.phase": "Fase",
@@ -453,7 +453,7 @@ const de: Dict = {
   "lang.zh": "中文",
 
   "dash.eyebrow": "Dashboard",
-  "dash.title": "Physiologische Momentaufnahme",
+  "dash.title": "Kenne deine Menstruationsphase",
   "dash.desc": "Zyklusbewusste Telemetrie-Konsole mit phasenschattierter Trendvisualisierung.",
   "dash.cycleDay": "Zyklustag",
   "dash.phase": "Phase",
