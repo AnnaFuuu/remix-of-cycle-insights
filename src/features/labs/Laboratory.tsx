@@ -9,6 +9,7 @@ import { useClinical } from "@/lib/clinical/use-clinical";
 import { EmptyData } from "@/components/hnhh/EmptyData";
 import { ANALYTE_LABEL } from "@/lib/clinical/reference-ranges";
 import type { AssayFlag, LabPanel } from "@/lib/clinical/types";
+import { UserLabsPanel } from "./UserLabsPanel";
 
 function FlagPill({ flag }: { flag: AssayFlag }) {
   const cls = flag === "H"
