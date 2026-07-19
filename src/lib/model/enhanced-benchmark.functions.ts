@@ -88,7 +88,7 @@ const BASE_KEYS = [
 const ROLL_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr"];
 const ROLL_WINDOWS = [7];
 const Z_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr", "sleep_score"];
-const CV_FOLDS = 3;
+const CV_FOLDS = 2;
 const CV_SEED = 42;
 const CLUSTER_K = 3;
 
