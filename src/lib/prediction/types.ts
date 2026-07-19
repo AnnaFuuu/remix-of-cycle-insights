@@ -14,6 +14,7 @@ export interface PredictorInput {
   sleepDuration: number | null;
   stressScore: number | null;
   activityLevel: ActivityLevel | null;
+  glucose: number | null;
 }
 
 export type MenstrualPhase = "Menstrual" | "Follicular" | "Ovulatory" | "Luteal";
