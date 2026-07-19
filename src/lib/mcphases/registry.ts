@@ -227,7 +227,23 @@ export const MCPHASES_TABLES: McphasesTable[] = [
     ],
   },
   scaffold("subject_info", "mcphases_subject_info", "Subject info", "Demographic + background survey.", "participant", "demographic"),
-  scaffold("height_weight", "mcphases_height_weight", "Height & weight", "Self-reported height/weight 2022 & 2024.", "participant", "demographic"),
+  {
+    key: "height_weight",
+    table: "mcphases_height_weight",
+    label: "Height & weight",
+    description: "Self-reported height/weight snapshots for 2022 and 2024.",
+    status: "active",
+    keyStyle: "participant",
+    category: "demographic",
+    conflictColumns: ["participant_id"],
+    csvColumns: [
+      { csv: "id", db: "participant_id", coerce: "int", required: true },
+      { csv: "height_2022", db: "height_2022", coerce: "number" },
+      { csv: "weight_2022", db: "weight_2022", coerce: "number" },
+      { csv: "height_2024", db: "height_2024", coerce: "number" },
+      { csv: "weight_2024", db: "weight_2024", coerce: "number" },
+    ],
+  },
   scaffold("demographic_vo2_max", "mcphases_demographic_vo2_max", "Demographic VO₂ max", "Fitbit VO₂ max estimate from demographics + HR.", "day", "cardio"),
 ];
 
