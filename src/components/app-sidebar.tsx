@@ -86,14 +86,6 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                   );
                 })}
-                {g.label === "nav.group.ai" && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setCopilotOpen(true)} tooltip={t("nav.copilot")}>
-                      <Bot className="h-4 w-4" />
-                      <span>{t("nav.copilot")}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
