@@ -10,6 +10,7 @@ import {
 import { byPhase, mean, pearson, rollingAvg } from "@/lib/hormonal/analytics";
 import { PHASE_ACCENT } from "@/lib/hormonal/phase";
 import type { HormonalPhase } from "@/lib/hormonal/types";
+import { TrainValTestSplit } from "./TrainValTestSplit";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -19,7 +20,8 @@ export function Analytics() {
   if (!entries.length) {
     return (
       <>
-        <PageHeader eyebrow="Analytics" title="Longitudinal analytics" description="N/A — no telemetry logged." />
+        <PageHeader eyebrow="Model training" title="Analytics · Step 1 dataset split" description="Participant-level stratified 60/20/20 split over the mcPHASES cohort. Local telemetry is empty — longitudinal charts below become active once entries are logged." />
+        <TrainValTestSplit />
         <EmptyData />
       </>
     );
@@ -81,6 +83,8 @@ export function Analytics() {
         title="Longitudinal analysis"
         description="Rolling averages, phase comparisons, and lightweight correlation summaries across the current window."
       />
+
+      <TrainValTestSplit />
 
       <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-3 sm:px-8">
         <CorrCard label="Sleep quality ↔ Mood" r={corrSleepMood} />
