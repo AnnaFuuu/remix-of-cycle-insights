@@ -55,13 +55,16 @@ export function PhaseClassification() {
               <CardDescription className="text-xs">
                 Four-class target (<span className="font-medium">Menstrual · Follicular · Fertility · Luteal</span>).
                 Predictors = all non-phase, non-identifier features (LH / E3G / PdG included when observed; the
-                Step-4 imputer fills them for new users). Three algorithms compete under the same participant-level
-                split: <span className="font-medium">Softmax GBRT</span> (multi-class gradient-boosted trees, the
-                literature-preferred choice for tabular data — Grinsztajn et al. NeurIPS 2022; Shwartz-Ziv & Armon
-                2022), <span className="font-medium">Random Forest</span> (Gini, majority vote), and
-                <span className="font-medium"> multinomial logistic regression</span> as a linear baseline.
-                Winner = highest <span className="font-medium">macro-F1 on validation</span>; class weights =
-                inverse train frequency to handle imbalance.
+                Step-4 imputer fills them for new users). Three algorithms compete under
+                <span className="font-medium"> 5-fold stratified cross-validation by participant</span> over the
+                pre-split <span className="font-medium">train + validation</span> pool — the test set stays held
+                out. Algorithms: <span className="font-medium">Softmax GBRT</span> (multi-class gradient-boosted
+                trees, the literature-preferred choice for tabular data — Grinsztajn et al. NeurIPS 2022;
+                Shwartz-Ziv &amp; Armon 2022), <span className="font-medium">Random Forest</span> (Gini, majority
+                vote), and <span className="font-medium">multinomial logistic regression</span> as a linear
+                baseline. Winner = highest <span className="font-medium">mean CV macro-F1</span>; then refit on the
+                full pool and scored on the held-out test set. Class weights = inverse fold-train frequency;
+                imputation uses fold-train medians (no leakage).
               </CardDescription>
             </div>
             <Button size="sm" onClick={() => m.mutate()} disabled={m.isPending}>
