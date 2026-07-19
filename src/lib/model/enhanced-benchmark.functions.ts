@@ -84,10 +84,11 @@ const BASE_KEYS = [
   "sleep_score", "sleep_asleep_min", "stress_score", "glucose_mean",
   "rhr", "cramps", "bloating",
 ];
-const ROLL_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr", "sleep_score", "resp_rate_full"];
-const ROLL_WINDOWS = [3, 7];
-const Z_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr", "sleep_score", "resp_rate_full", "stress_score", "glucose_mean", "resp_rate_full"];
-const CV_FOLDS = 5;
+// Kept tight so 6 methods × N folds fits inside the Worker time budget.
+const ROLL_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr"];
+const ROLL_WINDOWS = [7];
+const Z_KEYS = ["hrv_mean", "wrist_temp_overnight_mean", "rhr", "sleep_score"];
+const CV_FOLDS = 3;
 const CV_SEED = 42;
 const CLUSTER_K = 3;
 
