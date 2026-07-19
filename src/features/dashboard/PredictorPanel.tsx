@@ -57,7 +57,7 @@ const wearable: FieldSpec[] = [
 const EMPTY: PredictorInput = {
   age: 0,
   bmi: null,
-  cycleDay: null,
+  wristTempDelta: null,
   lh: null,
   estradiol: null,
   restingHR: null,
