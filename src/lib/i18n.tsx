@@ -18,7 +18,7 @@ const en: Dict = {
   "nav.labs": "Laboratory",
   "nav.wearables": "Wearable Signals",
   "nav.biomarkers": "Biomarkers",
-  "nav.quality": "Data Quality",
+  "nav.quality": "Data for training models",
   "nav.model": "Foundation Model",
   "nav.xai": "Explainable AI",
   "nav.copilot": "Copilot",
