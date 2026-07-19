@@ -29,8 +29,10 @@ export function Laboratory() {
   if (!panels.length || !selected) {
     return (
       <>
-        <PageHeader eyebrow="Data · Endocrine" title="Laboratory results" description="N/A — no lab panels ingested." />
-        <EmptyData />
+        <PageHeader eyebrow="Data · Endocrine" title="Laboratory results" description="Log your own lab work or upload reports below." />
+        <div className="px-6 py-6 sm:px-8">
+          <UserLabsPanel />
+        </div>
       </>
     );
   }
