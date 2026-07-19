@@ -1,106 +1,174 @@
-# CycloPredict · 月经周期预测平台
+# CycloPredict · Menstrual Cycle Prediction Platform
 
-基于多模态真实生理数据的女性月经周期预测平台。整合 mcPHASES/PhysioNet 数据，以睡眠、HRV、腕温、BMI、压力等可穿戴指标及可选实验室激素（LH、雌激素）为预测变量，通过机器学习实现周期阶段分类预测。
-
----
-
-## 核心功能
-
-- **个人数据管理（Personal data）**
-  - 日常可穿戴指标录入：BMI、腕温变化、HRV、呼吸率、睡眠评分/时长、压力评分、血糖、RHR、 cramps、bloating 等
-  - 实验室检查日历（Laboratory）：用户可手动输入或上传体检/激素报告，支持 AI 自动提取并隐私加密存储
-  - 预测历史（Prediction History）：保存每次预测结果，便于长期追踪与对比
-
-- **模型训练后台（Model training）**
-  - 数据质量看板（Data for training models）
-  - 训练流程：Train/Val/Test 划分 → 特征工程 → 预处理 → 激素回归 → 阶段分类 → 高级方法 Benchmark
-  - 支持 5 折交叉验证与模型持久化
-
-- **Dashboard 预测**
-  - 普通用户只需在 Dashboard 输入少量字段，即可调用已训练模型预测当前周期阶段
-  - 研究者模式（Researcher Mode）开启后才显示模型训练入口，日常用户不可见
+An AI-powered multimodal platform for menstrual cycle prediction based on real-world physiological data. CycloPredict integrates the **mcPHASES/PhysioNet** dataset and leverages wearable signals—including sleep, heart rate variability (HRV), wrist temperature, BMI, stress, and optional laboratory hormone measurements (e.g., LH and estradiol)—to predict menstrual cycle phases using machine learning.
 
 ---
 
-## 技术栈
+# Core Features
 
-- **框架**：TanStack Start v1 + React 19 + Vite 7
-- **样式**：Tailwind CSS v4 + shadcn/ui
-- **后端 / 数据库**：Lovable Cloud（Postgres）
-- **状态管理**：Zustand + TanStack Query
-- **图表**：Recharts
-- **部署**：Lovable Cloud / Edge Worker
+## Personal Data Management
+
+- **Wearable Health Data**
+  - Record daily physiological metrics including:
+    - BMI
+    - Wrist temperature change
+    - Heart rate variability (HRV)
+    - Respiratory rate
+    - Sleep score & duration
+    - Stress score
+    - Blood glucose
+    - Resting heart rate (RHR)
+    - Cramps
+    - Bloating
+    - And more
+
+- **Laboratory Results**
+  - Users can manually enter or upload laboratory reports (e.g., hormone tests).
+  - AI automatically extracts biomarkers while securely encrypting sensitive health information.
+
+- **Prediction History**
+  - Stores previous prediction results for long-term monitoring and comparison.
 
 ---
 
-## 数据与模型流程
+## Model Training
 
+- **Training Dataset Dashboard**
+  - Visualize dataset quality, feature coverage, and participant distributions.
+
+- **Machine Learning Pipeline**
+  - Train / Validation / Test Split
+  - Feature Engineering
+  - Data Preprocessing
+  - Hormone Regression
+  - Menstrual Phase Classification
+  - Advanced Model Benchmarking
+
+- Supports:
+  - 5-fold Cross Validation
+  - Model Persistence
+  - Reproducible Training
+
+---
+
+## Prediction Dashboard
+
+- End users only need to provide a small number of wearable health metrics to predict their current menstrual phase using pretrained models.
+
+- **Researcher Mode** unlocks the complete model training interface, while regular users only have access to prediction features.
+
+---
+
+# Technology Stack
+
+| Component          | Technology                            |
+| ------------------ | ------------------------------------- |
+| Framework          | TanStack Start v1 + React 19 + Vite 7 |
+| UI                 | Tailwind CSS v4 + shadcn/ui           |
+| Backend & Database | Lovable Cloud (PostgreSQL)            |
+| State Management   | Zustand + TanStack Query              |
+| Charts             | Recharts                              |
+| Deployment         | Lovable Cloud / Edge Workers          |
+
+---
+
+# Data & Machine Learning Pipeline
+
+```text
+Raw CSV Files (mcPHASES / PhysioNet)
+            │
+            ▼
+Participant-level Data Integration
+            │
+            ▼
+Data Quality & Coverage Assessment
+            │
+            ▼
+Train / Validation / Test Split
+(Stratified by participant, 60 / 20 / 20)
+            │
+            ▼
+Feature Engineering
+• BMI
+• Wrist Temperature Change
+• HRV
+• Respiratory Rate
+• Sleep Score
+• Sleep Duration
+• Stress Score
+• Blood Glucose
+• Resting Heart Rate
+• Cramps
+• Bloating
+            │
+            ▼
+KNN Imputation
+(Median Fallback)
+            │
+            ▼
+Hormone Regression
+(Predict LH / Estradiol when unavailable)
+            │
+            ▼
+Menstrual Phase Classification
+GBRT / Random Forest / Logistic Regression
+            │
+            ▼
+Advanced Benchmark Models
+• Ridge
+• Softmax GBRT
+• Small MLP
+• Mixture-of-Experts (MoE)
+• HMM Smoothing
 ```
-原始 CSV（mcPHASES / PhysioNet）
-    ↓ 按 participant_id 关联
-数据质量 / 覆盖度检查
-    ↓
-训练/验证/测试划分（按受试者分层，60/20/20）
-    ↓
-特征工程：BMI、腕温 Δ、HRV、呼吸率、睡眠评分、睡眠时长、
-         压力评分、血糖、RHR、cramps、bloating 等 11 维输入
-    ↓
-KNN 插补（中位数 fallback）
-    ↓
-激素回归（Hormone Regression）→ 当 LH/E2 缺失时作为 fallback
-    ↓
-阶段分类（Phase Classification）：GBRT / Random Forest / Logistic Regression
-    ↓
-高级方法 Benchmark：Ridge、Softmax GBRT、MLP、MoE、HMM 平滑
-```
 
 ---
 
-## 模型效果摘要
+# Model Performance
 
-在 42 名受试者、按 participant 分层的 5 折 CV + held-out test 上：
+Evaluation was performed on **42 participants** using **participant-level 5-fold cross-validation** and an independent held-out test set.
 
-| 方法 | CV Acc | CV Macro-F1 | 说明 |
-|---|---|---|---|
-| Ridge（线性基线） | 0.385 | 0.319 | 最快，表现稳健 |
-| Softmax GBRT（enriched） | 0.358 | **0.334** | 加入 rolling + z-score 特征 |
-| Small MLP (1×32) | 0.338 | 0.328 | 泛化尚可 |
-| MoE GBRT | 0.342 | 0.308 | K-Means phenotype 分群暂未带来提升 |
+| Model                            | CV Accuracy | CV Macro-F1 | Notes                                                    |
+| -------------------------------- | ----------: | ----------: | -------------------------------------------------------- |
+| Ridge (Linear Baseline)          |       0.385 |       0.319 | Fastest and most stable                                  |
+| Softmax GBRT (Enriched Features) |       0.358 |   **0.334** | Rolling statistics + z-score features                    |
+| Small MLP (1×32)                 |       0.338 |       0.328 | Reasonable generalization                                |
+| MoE GBRT                         |       0.342 |       0.308 | K-Means phenotype clustering did not improve performance |
 
-> 当前样本量是主要瓶颈。Luteal 阶段预测最好（F1 ~0.48），Fertility 窗口最窄、个体差异最大，预测难度最高。
-
----
-
-## 隐私与安全
-
-- 体检报告等 PII 使用 AES-256-GCM 服务端加密
-- 研究相关数据表启用 RLS，仅项目所有者/授权用户可访问
-- 研究者模式隐藏模型训练入口，避免普通用户误操作
+> **Current dataset size is the primary bottleneck.** The **Luteal** phase achieved the best performance (F1 ≈ 0.48), while the **Fertility Window** remains the most difficult phase due to its short duration and large inter-individual variability.
 
 ---
 
-## 本地开发
+# Privacy & Security
+
+- Laboratory reports and other personally identifiable information (PII) are encrypted using **AES-256-GCM**.
+- Research datasets are protected with **Row-Level Security (RLS)**.
+- Model training features are hidden behind **Researcher Mode** to prevent accidental access by general users.
+
+---
+
+# Local Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 bun install
 
-# 启动开发服务器
+# Start development server
 bun dev
 ```
 
-> 项目使用 Lovable Cloud 作为后端。本地开发时需要正确的环境变量才能连接数据库与认证服务。
+> CycloPredict uses **Lovable Cloud** as its backend. Proper environment variables are required to connect to the database and authentication services during local development.
 
 ---
 
-## 数据引用
+# Datasets
 
-- **mcPHASES**：Chen et al., 2024. Multi-center Cycle Phenotyping and Endocrine Signatures.
-- **NHANES**：CDC / NCHS, 2013–2020.
-- **UK Biobank**：Sudlow et al., 2015.
+- **mcPHASES** — Chen et al. (2024). _Multi-center Cycle Phenotyping and Endocrine Signatures._
+- **NHANES** — Centers for Disease Control and Prevention (CDC), 2013–2020.
+- **UK Biobank** — Sudlow et al. (2015).
 
 ---
 
-## 许可证
+# License
 
-本项目代码遵循标准开源协议，数据使用受各原始数据集许可条款约束。
+The source code is released under a standard open-source license. Dataset usage is subject to the licensing terms of their respective providers.
