@@ -29,7 +29,7 @@ const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal
 
 export function Research() {
   const { ready, entries, profile, setProfile } = useHormonalStore();
-  const [cohort] = React.useState(() => generateCohort(40, 28, 14));
+  const cohort = React.useMemo(() => generateCohort(40, 28, 14), []);
   const narrateFn = useServerFn(generateNarrative);
   const [narrative, setNarrative] = React.useState<string | null>(null);
   const [narrating, setNarrating] = React.useState(false);
@@ -200,7 +200,7 @@ export function Research() {
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base"><Database className="h-4 w-4 text-primary" /> Synthetic benchmark cohort</CardTitle>
-            <CardDescription>{cohort.length} deterministic synthetic subjects for pipeline testing.</CardDescription>
+            <CardDescription>{cohort.length ? `${cohort.length} deterministic synthetic subjects for pipeline testing.` : "N/A — synthetic cohort disabled. Ingest real datasets from the importer above."}</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="preview">
