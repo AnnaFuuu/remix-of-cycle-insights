@@ -11,6 +11,8 @@ export interface PredictorInput {
   sleepDuration: number | null;
   stressScore: number | null;
   glucose: number | null;
+  cramps: number | null;
+  bloating: number | null;
 }
 
 export type MenstrualPhase = "Menstrual" | "Follicular" | "Ovulatory" | "Luteal";

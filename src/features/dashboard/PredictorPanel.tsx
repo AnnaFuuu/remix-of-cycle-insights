@@ -9,7 +9,20 @@ import { useI18n } from "@/lib/i18n";
 import type { PredictorInput } from "@/lib/prediction/types";
 import { FlaskConical, Activity, User, Sparkles } from "lucide-react";
 
-type NumericKey = keyof PredictorInput;
+type NumericKey = Exclude<keyof PredictorInput, "cramps" | "bloating">;
+type OrdinalKey = "cramps" | "bloating";
+
+const ORDINAL_OPTIONS: { value: number; label: string }[] = [
+  { value: 1, label: "predictor.symptom.veryLow" },
+  { value: 2, label: "predictor.symptom.moderate" },
+  { value: 3, label: "predictor.symptom.high" },
+  { value: 4, label: "predictor.symptom.veryHigh" },
+];
+
+const symptomFields: { key: OrdinalKey; label: string }[] = [
+  { key: "cramps", label: "predictor.cramps" },
+  { key: "bloating", label: "predictor.bloating" },
+];
 
 interface FieldSpec {
   key: NumericKey;
@@ -54,6 +67,8 @@ const EMPTY: PredictorInput = {
   sleepDuration: null,
   stressScore: null,
   glucose: null,
+  cramps: null,
+  bloating: null,
 };
 
 type FieldState = { value: string; na: boolean };
@@ -69,6 +84,10 @@ function initialState(): Record<NumericKey, FieldState> {
 export function PredictorPanel() {
   const { t } = useI18n();
   const [fields, setFields] = React.useState<Record<NumericKey, FieldState>>(() => initialState());
+  const [symptoms, setSymptoms] = React.useState<Record<OrdinalKey, number | "na" | "">>({
+    cramps: "",
+    bloating: "",
+  });
   const [submitted, setSubmitted] = React.useState<PredictorInput | null>(null);
 
   const setValue = (k: NumericKey, v: string) =>
@@ -87,6 +106,10 @@ export function PredictorPanel() {
         num !== null && Number.isNaN(num) ? null : num;
     }
     out.age = Number(fields.age.value);
+    for (const s of symptomFields) {
+      const v = symptoms[s.key];
+      out[s.key] = v === "" || v === "na" ? null : v;
+    }
     return out;
   };
 
@@ -97,6 +120,7 @@ export function PredictorPanel() {
 
   const onReset = () => {
     setFields(initialState());
+    setSymptoms({ cramps: "", bloating: "" });
     setSubmitted(null);
   };
 
@@ -152,6 +176,62 @@ export function PredictorPanel() {
             setNA={setNA}
             t={t}
           />
+
+          <div className="rounded-lg border border-border/50 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="text-primary"><Sparkles className="h-4 w-4" /></span>
+              <span className="text-sm font-semibold text-foreground">{t("predictor.group.symptoms")}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {symptomFields.map((f) => {
+                const v = symptoms[f.key];
+                const isNA = v === "na";
+                return (
+                  <div key={f.key} className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      {t(f.label as never)}
+                    </Label>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {ORDINAL_OPTIONS.map((o) => {
+                        const selected = v === o.value;
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            onClick={() =>
+                              setSymptoms((prev) => ({ ...prev, [f.key]: o.value }))
+                            }
+                            disabled={isNA}
+                            className={
+                              "rounded-md border px-2.5 py-1 text-xs transition-colors " +
+                              (selected
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border/60 bg-background hover:bg-muted") +
+                              (isNA ? " opacity-50" : "")
+                            }
+                          >
+                            {t(o.label as never)}
+                          </button>
+                        );
+                      })}
+                      <label className="ml-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={isNA}
+                          onCheckedChange={(c) =>
+                            setSymptoms((prev) => ({
+                              ...prev,
+                              [f.key]: c ? "na" : "",
+                            }))
+                          }
+                        />
+                        N/A
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
             <Button onClick={onPredict} disabled={!ageValid}>
