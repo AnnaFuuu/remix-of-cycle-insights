@@ -15,6 +15,7 @@ import { FeatureEngineering } from "./FeatureEngineering";
 import { Preprocessing } from "./Preprocessing";
 import { HormoneRegression } from "./HormoneRegression";
 import { PhaseClassification } from "./PhaseClassification";
+import { EnhancedBenchmark } from "./EnhancedBenchmark";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -30,6 +31,7 @@ export function Analytics() {
         <Preprocessing />
         <HormoneRegression />
         <PhaseClassification />
+        <EnhancedBenchmark />
         <EmptyData />
       </>
     );
@@ -97,6 +99,7 @@ export function Analytics() {
       <Preprocessing />
       <HormoneRegression />
       <PhaseClassification />
+      <EnhancedBenchmark />
 
       <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-3 sm:px-8">
         <CorrCard label="Sleep quality ↔ Mood" r={corrSleepMood} />

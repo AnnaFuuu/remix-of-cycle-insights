@@ -8,7 +8,8 @@ export type PipelineStep =
   | "features"
   | "preprocess"
   | "regression"
-  | "classification";
+  | "classification"
+  | "enhanced_benchmark";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface PipelineRun<T = any> {
