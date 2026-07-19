@@ -14,12 +14,13 @@ import { EXPORT_SCHEMA_VERSION } from "@/lib/hormonal/types";
 import { BASELINE } from "@/lib/hormonal/analytics";
 import { generateCohort } from "@/lib/hormonal/seed";
 import { PHASE_ACCENT } from "@/lib/hormonal/phase";
-import { Copy, Download, ShieldCheck, Database } from "lucide-react";
+import { Copy, Download, ShieldCheck, Database, BookOpen } from "lucide-react";
 import { Sparkles, Loader2, Bot } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateNarrative } from "@/lib/agent/actions.functions";
 import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
+import { DATASETS } from "@/lib/clinical/datasets";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
