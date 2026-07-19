@@ -74,7 +74,7 @@ export function Research() {
     URL.revokeObjectURL(url);
   };
 
-  const latest = entries[entries.length - 1];
+  const latest = entries.length ? entries[entries.length - 1] : null;
 
   return (
     <div className="space-y-6 pb-10">
