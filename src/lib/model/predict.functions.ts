@@ -104,6 +104,27 @@ export const predictPhase = createServerFn({ method: "POST" })
       const raw = (data as unknown as Record<string, number | null>)[uiKey];
       uiByFeature[featureKey] = toFeatureValue(uiKey, raw ?? null);
     }
+
+    // If user left LH / estrogen as N/A, use the trained hormone regressor
+    // (loaded from Postgres) to impute them from wearables before running the
+    // phase classifier. Falls back to train medians only when no regressor
+    // artifact has been saved yet.
+    const imputed: { lh?: number; estradiol?: number } = {};
+    const needsLh = uiByFeature["lh"] === null || uiByFeature["lh"] === undefined;
+    const needsEstrogen = uiByFeature["estrogen"] === null || uiByFeature["estrogen"] === undefined;
+    if (needsLh || needsEstrogen) {
+      try {
+        const { predictHormonesFromFeatureRow } = await import("./regression.functions");
+        const hormones = await predictHormonesFromFeatureRow(uiByFeature);
+        if (needsLh && hormones.lh !== null) {
+          uiByFeature["lh"] = hormones.lh; imputed.lh = hormones.lh;
+        }
+        if (needsEstrogen && hormones.estrogen !== null) {
+          uiByFeature["estrogen"] = hormones.estrogen; imputed.estradiol = hormones.estrogen;
+        }
+      } catch (e) { console.error("[predictPhase] hormone imputation failed", e); }
+    }
+
     const imputedKeys: string[] = [];
     const x = new Float64Array(predictors.length);
     for (let f = 0; f < predictors.length; f++) {
@@ -126,10 +147,10 @@ export const predictPhase = createServerFn({ method: "POST" })
     const phase = toPublicPhase(classes[idx]);
     const confidence = +probs[idx].toFixed(4);
 
-    const imputed: { lh?: number; estradiol?: number } = {};
+    // Fall back to median imputation reporting when regressor wasn't available.
     for (let f = 0; f < predictors.length; f++) {
-      if (predictors[f] === "lh" && imputedKeys.includes("lh")) imputed.lh = +medians[f].toFixed(3);
-      if (predictors[f] === "estrogen" && imputedKeys.includes("estrogen")) imputed.estradiol = +medians[f].toFixed(3);
+      if (predictors[f] === "lh" && imputedKeys.includes("lh") && imputed.lh === undefined) imputed.lh = +medians[f].toFixed(3);
+      if (predictors[f] === "estrogen" && imputedKeys.includes("estrogen") && imputed.estradiol === undefined) imputed.estradiol = +medians[f].toFixed(3);
     }
 
     return { phase, confidence, probabilities, imputed };
