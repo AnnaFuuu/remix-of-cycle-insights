@@ -1396,6 +1396,9 @@ export type Database = {
           stress_sleep_points: number | null
           study_interval: number | null
           weight_kg: number | null
+          wrist_temp_daily_mean: number | null
+          wrist_temp_overnight_mean: number | null
+          wrist_temp_samples: number | null
         }
         Relationships: [
           {
