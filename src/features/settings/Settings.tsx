@@ -9,9 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useResearcherMode } from "@/lib/researcher-mode";
+import { KeyRound, Lock } from "lucide-react";
 
 export function Settings() {
   const { ready, profile, setProfile, entries, resetSeed, clearAll } = useHormonalStore();
+  const { isResearcher, unlock, lock } = useResearcherMode();
+  const [passphrase, setPassphrase] = React.useState("");
   const [draft, setDraft] = React.useState(profile);
   React.useEffect(() => setDraft(profile), [profile]);
 
