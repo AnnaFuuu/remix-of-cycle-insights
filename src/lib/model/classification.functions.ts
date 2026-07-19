@@ -124,7 +124,8 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     for (let k = 0; k < K; k++) classWeight[k] = c[k] > 0 ? total / (K * c[k]) : 1;
   }
 
-  const mtry = Math.max(3, Math.floor(Math.sqrt(nFeat)));
+  const mtry = Math.max(4, Math.floor(Math.sqrt(nFeat)));
+  const gbrtMtry = Math.max(6, Math.floor(Math.sqrt(nFeat) * 1.5));
   const algos: AlgoResult[] = [];
   const trainedByAlgo: Record<AlgoName, AnyModel> = {} as Record<AlgoName, AnyModel>;
 
@@ -134,7 +135,11 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
   };
 
   {
-    const hp = { nTrees: 60, maxDepth: 4, lr: 0.1, mtry: nFeat, minSamples: 5, candidates: 10, lambda: 1, seed: 42 };
+    // Deeper boosted stumps with a slower learning rate + column subsampling
+    // (mtry < nFeat) generalize substantially better than the original shallow,
+    // full-feature ensemble. More rounds + smaller lr shrinks bias without
+    // over-fitting thanks to L2 leaf regularization.
+    const hp = { nTrees: 250, maxDepth: 5, lr: 0.05, mtry: gbrtMtry, minSamples: 4, candidates: 24, lambda: 1, seed: 42 };
     const t0 = performance.now();
     const m = fitSoftmaxGBRT(tr.X, tr.y, { ...hp, classWeight });
     const fitMs = +(performance.now() - t0).toFixed(0);
@@ -142,7 +147,7 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     const mt = evalOn(m, tr.X, tr.y), mv = evalOn(m, va.X, va.y), me = evalOn(m, te.X, te.y);
     algos.push({
       algo: "softmax_gbrt", label: "Softmax GBRT",
-      hyperparams: { nTrees: hp.nTrees, maxDepth: hp.maxDepth, lr: hp.lr, lambda: hp.lambda },
+      hyperparams: { nTrees: hp.nTrees, maxDepth: hp.maxDepth, lr: hp.lr, lambda: hp.lambda, mtry: hp.mtry },
       accuracy: { train: mt.accuracy, val: mv.accuracy, test: me.accuracy },
       macroF1:  { train: mt.macroF1,  val: mv.macroF1,  test: me.macroF1 },
       logLoss:  { train: mt.logLoss,  val: mv.logLoss,  test: me.logLoss },
@@ -152,7 +157,9 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     });
   }
   {
-    const hp = { nTrees: 60, maxDepth: 10, mtry, minSamples: 5, candidates: 10, seed: 42 };
+    // Larger, deeper forest with min-leaf = 2 lets the trees resolve rare
+    // phase transitions (Menstrual/Fertility) that the shallow forest missed.
+    const hp = { nTrees: 300, maxDepth: 16, mtry, minSamples: 2, candidates: 20, seed: 42 };
     const t0 = performance.now();
     const m = fitRandomForest(tr.X, tr.y, hp);
     const fitMs = +(performance.now() - t0).toFixed(0);
@@ -160,7 +167,7 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     const mt = evalOn(m, tr.X, tr.y), mv = evalOn(m, va.X, va.y), me = evalOn(m, te.X, te.y);
     algos.push({
       algo: "random_forest", label: "Random Forest",
-      hyperparams: { nTrees: hp.nTrees, maxDepth: hp.maxDepth, mtry: hp.mtry },
+      hyperparams: { nTrees: hp.nTrees, maxDepth: hp.maxDepth, mtry: hp.mtry, minSamples: hp.minSamples },
       accuracy: { train: mt.accuracy, val: mv.accuracy, test: me.accuracy },
       macroF1:  { train: mt.macroF1,  val: mv.macroF1,  test: me.macroF1 },
       logLoss:  { train: mt.logLoss,  val: mv.logLoss,  test: me.logLoss },
@@ -170,7 +177,9 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     });
   }
   {
-    const hp = { epochs: 200, lr: 0.3, l2: 1e-3 };
+    // Longer training with lighter L2 lets the standardized logistic model
+    // fully converge; the previous 200-epoch run stopped short of optimum.
+    const hp = { epochs: 500, lr: 0.2, l2: 1e-4 };
     const t0 = performance.now();
     const m = fitLogReg(tr.X, tr.y, { ...hp, classWeight });
     const fitMs = +(performance.now() - t0).toFixed(0);
