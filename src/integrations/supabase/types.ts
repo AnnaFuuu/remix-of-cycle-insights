@@ -1328,7 +1328,85 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mcphases_daily_features: {
+        Row: {
+          appetite: number | null
+          bloating: number | null
+          bmi: number | null
+          cramps: number | null
+          day_in_study: number | null
+          estrogen: number | null
+          exerciselevel: number | null
+          fatigue: number | null
+          flow_volume: number | null
+          foodcravings: number | null
+          glucose_max: number | null
+          glucose_mean: number | null
+          glucose_min: number | null
+          glucose_range: number | null
+          glucose_samples: number | null
+          glucose_std: number | null
+          headaches: number | null
+          height_cm: number | null
+          hrv_hf_mean: number | null
+          hrv_lf_mean: number | null
+          hrv_max: number | null
+          hrv_mean: number | null
+          hrv_median: number | null
+          hrv_min: number | null
+          hrv_samples: number | null
+          hrv_std: number | null
+          indigestion: number | null
+          is_weekend: boolean | null
+          lh: number | null
+          moodswing: number | null
+          participant_id: number | null
+          pdg: number | null
+          phase: string | null
+          resp_rate_deep: number | null
+          resp_rate_full: number | null
+          resp_rate_light: number | null
+          resp_rate_rem: number | null
+          rhr: number | null
+          rhr_error: number | null
+          self_stress: number | null
+          sleep_asleep_min: number | null
+          sleep_awake_min: number | null
+          sleep_composition_score: number | null
+          sleep_deep_min: number | null
+          sleep_deep_score_min: number | null
+          sleep_duration_score: number | null
+          sleep_efficiency: number | null
+          sleep_end: string | null
+          sleep_in_bed_min: number | null
+          sleep_light_min: number | null
+          sleep_rem_min: number | null
+          sleep_restlessness: number | null
+          sleep_revitalization_score: number | null
+          sleep_rhr: number | null
+          sleep_score: number | null
+          sleep_sessions: number | null
+          sleep_start: string | null
+          sleep_wake_min: number | null
+          sleepissue: number | null
+          sorebreasts: number | null
+          stress_exertion_points: number | null
+          stress_responsiveness_points: number | null
+          stress_score: number | null
+          stress_sleep_points: number | null
+          study_interval: number | null
+          weight_kg: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcphases_hormones_selfreport_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "mcphases_participants"
+            referencedColumns: ["participant_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
