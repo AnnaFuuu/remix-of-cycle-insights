@@ -4,6 +4,7 @@ import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { ANALYTE_LABEL, ANALYTE_ORDER, REF_UNITS, refRange } from "@/lib/clinical/reference-ranges";
 import type { LabAnalyte } from "@/lib/clinical/types";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceArea } from "recharts";
@@ -13,6 +14,14 @@ export function Biomarkers() {
   const { panels } = useClinical();
   const [analyte, setAnalyte] = React.useState<LabAnalyte>("Estradiol");
   if (!ready) return <PageSkeleton />;
+  if (!panels.length) {
+    return (
+      <>
+        <PageHeader eyebrow="Data · Biomarkers" title="Endocrine biomarkers" description="N/A — no biomarker panels ingested." />
+        <EmptyData />
+      </>
+    );
+  }
 
   const data = panels.map((p) => {
     const a = p.assays.find((x) => x.analyte === analyte)!;
