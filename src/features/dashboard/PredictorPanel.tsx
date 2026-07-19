@@ -31,6 +31,7 @@ interface FieldSpec {
   placeholder?: string;
   step?: string;
   allowNA: boolean;
+  info?: string;
 }
 
 const demographics: FieldSpec[] = [
