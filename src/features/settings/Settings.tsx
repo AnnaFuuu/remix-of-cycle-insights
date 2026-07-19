@@ -151,33 +151,15 @@ export function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isResearcher ? (
-              <Button variant="outline" onClick={() => { lock(); toast.success("Researcher mode locked"); }}>
-                Lock researcher mode
-              </Button>
-            ) : (
-              <form
-                className="flex flex-wrap items-end gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (unlock(passphrase)) { toast.success("Researcher mode unlocked"); setPassphrase(""); }
-                  else toast.error("Incorrect passphrase");
-                }}
-              >
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="passphrase" className="text-xs">Team passphrase</Label>
-                  <Input
-                    id="passphrase"
-                    type="password"
-                    value={passphrase}
-                    onChange={(e) => setPassphrase(e.target.value)}
-                    className="w-64"
-                    placeholder="Enter passphrase"
-                  />
-                </div>
-                <Button type="submit" disabled={!passphrase.trim()}>Unlock</Button>
-              </form>
-            )}
+            <Button
+              variant={isResearcher ? "outline" : "default"}
+              onClick={() => {
+                if (isResearcher) { lock(); toast.success("Researcher mode locked"); }
+                else { unlock(); toast.success("Researcher mode unlocked"); }
+              }}
+            >
+              {isResearcher ? "Lock researcher mode" : "Unlock researcher mode"}
+            </Button>
           </CardContent>
         </Card>
       </div>
