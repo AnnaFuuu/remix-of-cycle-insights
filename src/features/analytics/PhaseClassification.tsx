@@ -100,14 +100,24 @@ export function PhaseClassification() {
 }
 
 function Results({ data }: { data: ClassificationResult }) {
-  const winner = data.algos.find((a) => a.algo === data.bestAlgo)!;
+  const algos = Array.isArray(data.algos) ? data.algos : [];
+  const winner = algos.find((a) => a.algo === data.bestAlgo) ?? algos[0];
+  const winnerCv = hasCV(winner?.cv) ? winner.cv : null;
+  const hasAnyCv = algos.some((a) => hasCV(a.cv));
+  if (!winner) {
+    return (
+      <div className="rounded-lg border border-dashed border-border/60 bg-muted/30 p-4 text-xs text-muted-foreground">
+        No classification results are available yet. Click <span className="font-medium text-foreground">Train models</span> to generate a fresh run.
+      </div>
+    );
+  }
   return (
     <>
       <div className="grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
-        <Kv label={`CV pool days${data.cvFolds ? ` (${data.cvFolds}-fold)` : ""}`} value={(data.poolN ?? (data.trainN + data.valN)).toLocaleString()} />
-        <Kv label="Held-out test days" value={data.testN.toLocaleString()} />
-        <Kv label="Predictors" value={String(data.predictors.length)} />
-        <Kv label="Pre-split (train / val)" value={`${data.trainN.toLocaleString()} / ${data.valN.toLocaleString()}`} />
+        <Kv label={`CV pool days${data.cvFolds ? ` (${data.cvFolds}-fold)` : ""}`} value={fmtCount(data.poolN ?? ((data.trainN ?? 0) + (data.valN ?? 0)))} />
+        <Kv label="Held-out test days" value={fmtCount(data.testN)} />
+        <Kv label="Predictors" value={String(data.predictors?.length ?? 0)} />
+        <Kv label="Pre-split (train / val)" value={`${fmtCount(data.trainN)} / ${fmtCount(data.valN)}`} />
       </div>
 
       <div className="rounded-lg border border-border/60">
@@ -115,10 +125,10 @@ function Results({ data }: { data: ClassificationResult }) {
           <span className="text-sm font-semibold tracking-tight">Algorithm comparison</span>
           <div className="flex items-center gap-1.5 text-[11px]">
             <Trophy className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-muted-foreground">Winner{winner.cv ? " (mean CV macro-F1)" : ""}:</span>
+            <span className="text-muted-foreground">Winner{winnerCv ? " (mean CV macro-F1)" : ""}:</span>
             <span className={`rounded border px-1.5 py-0.5 font-medium ${ALGO_STYLE[winner.algo]}`}>{winner.label}</span>
             <span className="ml-2 tabular-nums text-muted-foreground">
-              {winner.cv ? <>CV F1 <span className="font-semibold text-foreground">{winner.cv.meanMacroF1.toFixed(3)} ± {winner.cv.stdMacroF1.toFixed(3)}</span>{" · "}</> : null}
+              {winnerCv ? <>CV F1 <span className="font-semibold text-foreground">{fmtMS(winnerCv.meanMacroF1, winnerCv.stdMacroF1)}</span>{" · "}</> : null}
               test F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
               {" · "}test acc <span className="font-semibold text-foreground">{winner.accuracy.test.toFixed(3)}</span>
             </span>
@@ -137,7 +147,7 @@ function Results({ data }: { data: ClassificationResult }) {
               </tr>
             </thead>
             <tbody className="font-mono">
-              {data.algos.map((a) => {
+              {algos.map((a) => {
                 const best = a.algo === data.bestAlgo;
                 return (
                   <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
@@ -150,7 +160,7 @@ function Results({ data }: { data: ClassificationResult }) {
                     <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{fmtHp(a.hyperparams)}</td>
                     <td className="px-3 py-1.5 text-right text-muted-foreground"><Timer className="mr-0.5 inline h-3 w-3" />{a.fitMs} ms</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.train, a.macroF1.train, a.logLoss.train)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{a.cv ? fmtCV(a.cv) : "—"}</td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{hasCV(a.cv) ? fmtCV(a.cv) : "—"}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.test, a.macroF1.test, a.logLoss.test)}</td>
                   </tr>
                 );
@@ -160,7 +170,7 @@ function Results({ data }: { data: ClassificationResult }) {
         </div>
       </div>
 
-      {data.cvFolds ? <CVFoldsCard data={data} /> : null}
+      {data.cvFolds && hasAnyCv ? <CVFoldsCard data={data} /> : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <PerClassCard winner={winner} classes={data.classes} />
@@ -198,7 +208,7 @@ function Results({ data }: { data: ClassificationResult }) {
             {c}: {data.classCounts.train[c]} / {data.classCounts.val[c]} / {data.classCounts.test[c]}
           </span>
         ))}
-        <div className="mt-1 text-[10px]">{data.notes} · Trained {new Date(data.refreshedAt).toLocaleString()}</div>
+        <div className="mt-1 text-[10px]">{data.notes} · Trained {data.refreshedAt ? new Date(data.refreshedAt).toLocaleString() : "—"}</div>
       </div>
     </>
   );
@@ -306,6 +316,22 @@ function Kv({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+function hasCV(cv: unknown): cv is AlgoResult["cv"] {
+  if (!cv || typeof cv !== "object") return false;
+  const candidate = cv as Partial<AlgoResult["cv"]>;
+  return (
+    Array.isArray(candidate.perFold) &&
+    typeof candidate.meanAccuracy === "number" &&
+    typeof candidate.stdAccuracy === "number" &&
+    typeof candidate.meanMacroF1 === "number" &&
+    typeof candidate.stdMacroF1 === "number" &&
+    typeof candidate.meanLogLoss === "number" &&
+    typeof candidate.stdLogLoss === "number"
+  );
+}
+function fmtCount(n: number | null | undefined) {
+  return typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—";
+}
 function fmtTrip(acc: number, f1: number, ll: number) {
   return `${acc.toFixed(3)} / ${f1.toFixed(3)} / ${ll.toFixed(3)}`;
 }
@@ -327,7 +353,7 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
           {data.cvFolds}-fold cross-validation · per-fold macro-F1 on out-of-fold participants
         </div>
         <div className="text-[11px] text-muted-foreground">
-          Stratified by participant over the train + validation pool ({data.poolN.toLocaleString()} labeled days).
+          Stratified by participant over the train + validation pool ({fmtCount(data.poolN)} labeled days).
           Test set stayed held out for every fold.
         </div>
       </div>
@@ -343,8 +369,9 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
             </tr>
           </thead>
           <tbody className="font-mono">
-            {data.algos.map((a) => {
+            {data.algos.filter((a) => hasCV(a.cv)).map((a) => {
               const best = a.algo === data.bestAlgo;
+              const cv = a.cv;
               return (
                 <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
                   <td className="px-3 py-1.5">
@@ -352,11 +379,11 @@ function CVFoldsCard({ data }: { data: ClassificationResult }) {
                       {a.label}
                     </span>
                   </td>
-                  {a.cv.perFold.map((f) => (
+                  {cv.perFold.map((f) => (
                     <td key={f.fold} className="px-3 py-1.5 text-right tabular-nums">{f.macroF1.toFixed(3)}</td>
                   ))}
                   <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
-                    {fmtMS(a.cv.meanMacroF1, a.cv.stdMacroF1)}
+                    {fmtMS(cv.meanMacroF1, cv.stdMacroF1)}
                   </td>
                 </tr>
               );
