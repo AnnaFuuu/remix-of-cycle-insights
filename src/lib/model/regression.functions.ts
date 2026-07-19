@@ -464,10 +464,28 @@ export const trainHormoneRegression = createServerFn({ method: "POST" }).handler
     // Select best by validation R² (higher is better).
     let best = algos[0];
     for (const a of algos) if (a.val.r2 > best.val.r2) best = a;
+    const bestModel = trained[best.algo];
     MODEL_CACHE[target] = {
-      model: trained[best.algo], predictors, medians: Array.from(trainMedians) as unknown as number[] & Float64Array,
+      model: bestModel, predictors, medians: Array.from(trainMedians) as unknown as number[] & Float64Array,
       algo: best.algo,
     };
+
+    // Persist to Postgres so inference works across worker instances / cold starts.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const upsertRes = await (supabaseAdmin.from("mcphases_trained_models" as any) as any).upsert({
+        kind: `hormone_regressor:${target}`,
+        algo: best.algo,
+        predictors,
+        medians: Array.from(trainMedians),
+        classes: [],
+        artifact: bestModel as unknown as Record<string, unknown>,
+        metrics: { train: algos.find((a) => a.algo === best.algo)!.train, val: best.val, test: best.test },
+        n_train: ytr.length,
+        trained_at: new Date().toISOString(),
+      }, { onConflict: "kind" });
+      if (upsertRes.error) console.error("[regression] persist failed", upsertRes.error);
+    } catch (e) { console.error("[regression] persist threw", e); }
 
     results.push({
       target, label: hormoneMeta[target].label, unit: hormoneMeta[target].unit,
@@ -480,7 +498,7 @@ export const trainHormoneRegression = createServerFn({ method: "POST" }).handler
   const payload: RegressionResult = {
     hormones: results,
     refreshedAt: new Date().toISOString(),
-    notes: "Predictors exclude phase, hormones, and timestamps. Missing predictors are filled with the train-set median (learned on train only). Best model per hormone is selected by validation R² and cached in-worker so inference on new user rows uses the saved artifact.",
+    notes: "Predictors exclude phase, hormones, and timestamps. Missing predictors are filled with the train-set median (learned on train only). Best model per hormone is selected by validation R² and persisted to Postgres so inference on new user rows uses the saved artifact across worker restarts.",
   };
   try {
     const { savePipelineRun } = await import("./pipeline-runs.functions");
@@ -489,21 +507,41 @@ export const trainHormoneRegression = createServerFn({ method: "POST" }).handler
   return payload;
 });
 
+// Load persisted hormone models from Postgres (falls back to in-worker cache).
+interface StoredHormoneModel { model: Model; predictors: string[]; medians: number[]; algo: AlgoName }
+async function loadHormoneModel(target: HormoneTarget): Promise<StoredHormoneModel | null> {
+  const cached = MODEL_CACHE[target];
+  if (cached) return { model: cached.model, predictors: cached.predictors, medians: cached.medians as unknown as number[], algo: cached.algo };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabaseAdmin.from("mcphases_trained_models" as any) as any)
+    .select("algo, predictors, medians, artifact")
+    .eq("kind", `hormone_regressor:${target}`).maybeSingle();
+  if (error || !data) return null;
+  const d = data as { algo: AlgoName; predictors: string[]; medians: number[]; artifact: Model };
+  const entry = { model: d.artifact, predictors: d.predictors, medians: d.medians, algo: d.algo };
+  MODEL_CACHE[target] = { ...entry, medians: entry.medians as unknown as number[] & Float64Array };
+  return entry;
+}
+
+export async function predictHormonesFromFeatureRow(
+  featureRow: Record<string, number | null | undefined | string>,
+): Promise<{ lh: number | null; estrogen: number | null; algos: Partial<Record<HormoneTarget, AlgoName>> }> {
+  const out: { lh: number | null; estrogen: number | null; algos: Partial<Record<HormoneTarget, AlgoName>> } = { lh: null, estrogen: null, algos: {} };
+  for (const t of ["lh", "estrogen"] as HormoneTarget[]) {
+    const entry = await loadHormoneModel(t); if (!entry) continue;
+    const x = new Float64Array(entry.predictors.length);
+    for (let f = 0; f < entry.predictors.length; f++) {
+      const v = toNum(featureRow[entry.predictors[f]]);
+      x[f] = v !== null ? v : entry.medians[f];
+    }
+    out[t] = +predictModel(entry.model, x).toFixed(3);
+    out.algos[t] = entry.algo;
+  }
+  return out;
+}
+
 // Inference API for callers with wearables-only rows (predictors keyed by feature name).
-// Values omitted / null fall back to the train medians persisted from the last fit.
 export const predictHormones = createServerFn({ method: "POST" })
   .inputValidator((d: { row: Record<string, number | null | undefined | string> }) => d)
-  .handler(async ({ data }): Promise<{ lh: number | null; estrogen: number | null; algos: Partial<Record<HormoneTarget, AlgoName>> }> => {
-    const out: { lh: number | null; estrogen: number | null; algos: Partial<Record<HormoneTarget, AlgoName>> } = { lh: null, estrogen: null, algos: {} };
-    for (const t of ["lh", "estrogen"] as HormoneTarget[]) {
-      const entry = MODEL_CACHE[t]; if (!entry) continue;
-      const x = new Float64Array(entry.predictors.length);
-      for (let f = 0; f < entry.predictors.length; f++) {
-        const v = toNum(data.row[entry.predictors[f]]);
-        x[f] = v !== null ? v : entry.medians[f];
-      }
-      out[t] = +predictModel(entry.model, x).toFixed(3);
-      out.algos[t] = entry.algo;
-    }
-    return out;
-  });
+  .handler(async ({ data }) => predictHormonesFromFeatureRow(data.row));
