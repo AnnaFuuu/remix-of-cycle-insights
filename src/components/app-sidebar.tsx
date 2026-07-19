@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/lib/i18n";
 import { useCopilot } from "@/components/agent/CopilotProvider";
+import { useResearcherMode } from "@/lib/researcher-mode";
 
 const groups = [
   {
@@ -58,6 +59,8 @@ export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { t } = useI18n();
   const { setOpen: setCopilotOpen } = useCopilot();
+  const { isResearcher } = useResearcherMode();
+  const visibleGroups = groups.filter((g) => g.label !== "nav.group.modelTraining" || isResearcher);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -72,7 +75,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {groups.map((g) => (
+        {visibleGroups.map((g) => (
           <SidebarGroup key={g.label}>
             <SidebarGroupLabel>{t(g.label)}</SidebarGroupLabel>
             <SidebarGroupContent>
