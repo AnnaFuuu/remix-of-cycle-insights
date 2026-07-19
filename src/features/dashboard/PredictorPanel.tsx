@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
 import type { PredictorInput } from "@/lib/prediction/types";
-import { FlaskConical, Activity, User, Sparkles } from "lucide-react";
+import { FlaskConical, Activity, User, Sparkles, HelpCircle } from "lucide-react";
 
 type NumericKey = Exclude<keyof PredictorInput, "cramps" | "bloating">;
 type OrdinalKey = "cramps" | "bloating";
