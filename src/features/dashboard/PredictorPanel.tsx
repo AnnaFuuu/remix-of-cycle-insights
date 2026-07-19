@@ -342,6 +342,19 @@ function FieldInput({
   t: (k: never) => string;
 }) {
   const [showInfo, setShowInfo] = React.useState(false);
+  const infoRef = React.useRef<HTMLSpanElement>(null);
+
+  React.useEffect(() => {
+    if (!showInfo) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (infoRef.current && !infoRef.current.contains(e.target as Node)) {
+        setShowInfo(false);
+      }
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [showInfo]);
+
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
@@ -350,7 +363,7 @@ function FieldInput({
           {f.unit && <span className="ml-1 opacity-60">({f.unit})</span>}
           {!f.allowNA && <span className="ml-1 text-destructive">*</span>}
           {f.info && (
-            <span className="relative">
+            <span ref={infoRef} className="relative">
               <button
                 type="button"
                 onClick={() => setShowInfo((v) => !v)}
