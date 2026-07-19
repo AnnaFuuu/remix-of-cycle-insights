@@ -136,7 +136,7 @@ export function Preprocessing() {
                 <table className="w-full text-[10px] font-mono">
                   <thead>
                     <tr className="bg-muted/40 text-left text-muted-foreground">
-                      {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "stress_score", "glucose_mean", "cramps"].map((k) => (
+                      {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "wrist_temp_overnight_mean", "stress_score", "glucose_mean", "cramps"].map((k) => (
                         <th key={k} className="whitespace-nowrap px-2.5 py-1.5 font-medium">{k}</th>
                       ))}
                     </tr>
@@ -144,7 +144,7 @@ export function Preprocessing() {
                   <tbody>
                     {q.data.preview.map((r, i) => (
                       <tr key={i} className="border-t border-border/40">
-                        {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "stress_score", "glucose_mean", "cramps"].map((k) => (
+                        {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "wrist_temp_overnight_mean", "stress_score", "glucose_mean", "cramps"].map((k) => (
                           <td key={k} className="whitespace-nowrap px-2.5 py-1 tabular-nums">{fmt(r[k])}</td>
                         ))}
                       </tr>
