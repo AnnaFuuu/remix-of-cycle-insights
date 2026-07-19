@@ -40,6 +40,7 @@ const wearable: FieldSpec[] = [
   { key: "sleepScore", label: "predictor.sleepScore", unit: "0–100", placeholder: "e.g. 78", allowNA: true },
   { key: "sleepDuration", label: "predictor.sleepDuration", unit: "hours", placeholder: "e.g. 7.5", step: "0.1", allowNA: true },
   { key: "stressScore", label: "predictor.stressScore", unit: "0–100", placeholder: "e.g. 32", allowNA: true },
+  { key: "glucose", label: "predictor.glucose", unit: "mmol/L", placeholder: "e.g. 5.4", step: "0.1", allowNA: true },
 ];
 
 const activityOptions: { value: ActivityLevel; label: string }[] = [
@@ -63,6 +64,7 @@ const EMPTY: PredictorInput = {
   sleepDuration: null,
   stressScore: null,
   activityLevel: null,
+  glucose: null,
 };
 
 type FieldState = { value: string; na: boolean };
