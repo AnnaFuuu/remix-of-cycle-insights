@@ -2,6 +2,7 @@ import * as React from "react";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
 import { ProactiveInsights } from "@/components/agent/ProactiveInsights";
+import { LongitudinalPanel } from "./LongitudinalPanel";
 import { useI18n } from "@/lib/i18n";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { StatCard } from "@/components/hnhh/StatCard";
@@ -187,6 +188,10 @@ export function Dashboard() {
             </Card>
           ))}
         </div>
+      </div>
+
+      <div className="px-6 pt-6 sm:px-8">
+        <LongitudinalPanel />
       </div>
     </div>
   );

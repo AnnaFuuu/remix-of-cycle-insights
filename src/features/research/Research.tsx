@@ -14,12 +14,13 @@ import { EXPORT_SCHEMA_VERSION } from "@/lib/hormonal/types";
 import { BASELINE } from "@/lib/hormonal/analytics";
 import { generateCohort } from "@/lib/hormonal/seed";
 import { PHASE_ACCENT } from "@/lib/hormonal/phase";
-import { Copy, Download, ShieldCheck, Database } from "lucide-react";
+import { Copy, Download, ShieldCheck, Database, BookOpen } from "lucide-react";
 import { Sparkles, Loader2, Bot } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateNarrative } from "@/lib/agent/actions.functions";
 import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
+import { DATASETS } from "@/lib/clinical/datasets";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -267,6 +268,37 @@ export function Research() {
                   <div>LH {BASELINE.lh[p][0]}–{BASELINE.lh[p][1]} mIU/mL</div>
                   <div>FSH {BASELINE.fsh[p][0]}–{BASELINE.fsh[p][1]} mIU/mL</div>
                 </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="px-6 sm:px-8">
+        <Card className="border-border/60">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4 text-primary" /> Reference datasets & pretraining corpora</CardTitle>
+            <CardDescription>Provenance of the corpora used for CycloFM pretraining and downstream validation.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {DATASETS.map((d) => (
+              <div key={d.id} className="rounded-lg border bg-background p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold">{d.name}</div>
+                  {d.usedForPretraining && <Badge variant="outline" className="rounded-full text-[10px]">pretraining</Badge>}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1 font-mono text-[11px] text-muted-foreground">
+                  <span>n =</span><span className="text-right tabular-nums">{d.sampleSize.toLocaleString()}</span>
+                  <span>variables</span><span className="text-right tabular-nums">{d.variables.toLocaleString()}</span>
+                  <span>license</span><span className="text-right">{d.license.split(" ")[0]}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {d.modalities.map((m) => (
+                    <span key={m} className="rounded border px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">{m}</span>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{d.description}</p>
+                <p className="mt-2 text-[10px] italic text-muted-foreground">{d.citation}</p>
               </div>
             ))}
           </CardContent>

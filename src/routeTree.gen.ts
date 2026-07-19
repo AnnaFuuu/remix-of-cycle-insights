@@ -9,14 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as XaiRouteImport } from './routes/xai'
+import { Route as WearablesRouteImport } from './routes/wearables'
 import { Route as TelemetryRouteImport } from './routes/telemetry'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResearchRouteImport } from './routes/research'
+import { Route as QualityRouteImport } from './routes/quality'
+import { Route as ModelRouteImport } from './routes/model'
+import { Route as LabsRouteImport } from './routes/labs'
+import { Route as BiomarkersRouteImport } from './routes/biomarkers'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const XaiRoute = XaiRouteImport.update({
+  id: '/xai',
+  path: '/xai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WearablesRoute = WearablesRouteImport.update({
+  id: '/wearables',
+  path: '/wearables',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelemetryRoute = TelemetryRouteImport.update({
   id: '/telemetry',
   path: '/telemetry',
@@ -35,6 +51,26 @@ const SettingsRoute = SettingsRouteImport.update({
 const ResearchRoute = ResearchRouteImport.update({
   id: '/research',
   path: '/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QualityRoute = QualityRouteImport.update({
+  id: '/quality',
+  path: '/quality',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelRoute = ModelRouteImport.update({
+  id: '/model',
+  path: '/model',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabsRoute = LabsRouteImport.update({
+  id: '/labs',
+  path: '/labs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BiomarkersRoute = BiomarkersRouteImport.update({
+  id: '/biomarkers',
+  path: '/biomarkers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -56,29 +92,47 @@ const ApiChatRoute = ApiChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/biomarkers': typeof BiomarkersRoute
+  '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
+  '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
+  '/xai': typeof XaiRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/biomarkers': typeof BiomarkersRoute
+  '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
+  '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
+  '/xai': typeof XaiRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/biomarkers': typeof BiomarkersRoute
+  '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
+  '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
+  '/xai': typeof XaiRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
@@ -86,43 +140,81 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
+    | '/biomarkers'
+    | '/labs'
+    | '/model'
+    | '/quality'
     | '/research'
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
+    | '/xai'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/analytics'
+    | '/biomarkers'
+    | '/labs'
+    | '/model'
+    | '/quality'
     | '/research'
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
+    | '/xai'
     | '/api/chat'
   id:
     | '__root__'
     | '/'
     | '/analytics'
+    | '/biomarkers'
+    | '/labs'
+    | '/model'
+    | '/quality'
     | '/research'
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
+    | '/xai'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  BiomarkersRoute: typeof BiomarkersRoute
+  LabsRoute: typeof LabsRoute
+  ModelRoute: typeof ModelRoute
+  QualityRoute: typeof QualityRoute
   ResearchRoute: typeof ResearchRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TelemetryRoute: typeof TelemetryRoute
+  WearablesRoute: typeof WearablesRoute
+  XaiRoute: typeof XaiRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/xai': {
+      id: '/xai'
+      path: '/xai'
+      fullPath: '/xai'
+      preLoaderRoute: typeof XaiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wearables': {
+      id: '/wearables'
+      path: '/wearables'
+      fullPath: '/wearables'
+      preLoaderRoute: typeof WearablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telemetry': {
       id: '/telemetry'
       path: '/telemetry'
@@ -149,6 +241,34 @@ declare module '@tanstack/react-router' {
       path: '/research'
       fullPath: '/research'
       preLoaderRoute: typeof ResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quality': {
+      id: '/quality'
+      path: '/quality'
+      fullPath: '/quality'
+      preLoaderRoute: typeof QualityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/model': {
+      id: '/model'
+      path: '/model'
+      fullPath: '/model'
+      preLoaderRoute: typeof ModelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/labs': {
+      id: '/labs'
+      path: '/labs'
+      fullPath: '/labs'
+      preLoaderRoute: typeof LabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/biomarkers': {
+      id: '/biomarkers'
+      path: '/biomarkers'
+      fullPath: '/biomarkers'
+      preLoaderRoute: typeof BiomarkersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -178,10 +298,16 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
+  BiomarkersRoute: BiomarkersRoute,
+  LabsRoute: LabsRoute,
+  ModelRoute: ModelRoute,
+  QualityRoute: QualityRoute,
   ResearchRoute: ResearchRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TelemetryRoute: TelemetryRoute,
+  WearablesRoute: WearablesRoute,
+  XaiRoute: XaiRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
