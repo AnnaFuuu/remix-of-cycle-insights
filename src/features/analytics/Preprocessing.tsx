@@ -7,10 +7,17 @@ import { getPreprocessing } from "@/lib/model/preprocess.functions";
 import { Filter, Wand2, ShieldCheck } from "lucide-react";
 
 const STRATEGY_STYLE: Record<string, string> = {
-  median: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20",
-  mode: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
+  "knn-continuous": "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20",
+  "knn-categorical": "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
   preserve: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
   skip: "bg-muted text-muted-foreground border-border/60",
+};
+
+const STRATEGY_LABEL: Record<string, string> = {
+  "knn-continuous": "KNN · mean",
+  "knn-categorical": "KNN · mode",
+  preserve: "preserve",
+  skip: "skip",
 };
 
 export function Preprocessing() {
@@ -37,15 +44,18 @@ export function Preprocessing() {
           <CardTitle className="mt-1 text-base font-semibold tracking-tight">Sanitize missing values, learn imputers on train, apply to val & test</CardTitle>
           <CardDescription className="text-xs">
             Placeholder tokens (<code className="rounded bg-muted px-1">-</code>, <code className="rounded bg-muted px-1">--</code>, <code className="rounded bg-muted px-1">NA</code>, empty strings) are converted to true NULLs.
-            Continuous features are imputed with the <span className="font-medium">training-set median</span>; ordinal self-reports with the <span className="font-medium">training-set mode</span>.
-            Hormone biomarkers (LH, estrogen, PdG) are <span className="font-medium">preserved as NA</span> and later filled by the dedicated hormone regression model. All imputation parameters are fit on train only and re-used verbatim on validation, test, and future user data — no leakage.
+            Every non-hormone feature is imputed with a <span className="font-medium">K-Nearest-Neighbors imputer (k=5)</span> fit on the training split only:
+            continuous features take the <span className="font-medium">mean</span> of the K nearest training neighbors; ordinal self-reports take the <span className="font-medium">mode</span>.
+            Neighbor distance is Euclidean on z-scored features, averaged over jointly observed dimensions so partially-missing rows still match well.
+            Hormone biomarkers (LH, estrogen, PdG) are <span className="font-medium">preserved as NA</span> and later filled by the dedicated hormone regression model.
+            The reference matrix, z-scoring statistics, and per-feature fallbacks form the preprocessing artifact — reused verbatim on validation, test, and future user data (no leakage).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat icon={<Filter className="h-3.5 w-3.5" />} label="Placeholder tokens sanitized" value={q.data ? q.data.sanitizedDashCount.toLocaleString() : "—"} />
-            <Stat icon={<Wand2 className="h-3.5 w-3.5" />} label="Median imputers" value={q.data ? q.data.params.filter((p) => p.strategy === "median").length.toString() : "—"} />
-            <Stat icon={<Wand2 className="h-3.5 w-3.5" />} label="Mode imputers" value={q.data ? q.data.params.filter((p) => p.strategy === "mode").length.toString() : "—"} />
+            <Stat icon={<Wand2 className="h-3.5 w-3.5" />} label="KNN neighbors (k)" value={q.data ? q.data.knn.k.toString() : "—"} />
+            <Stat icon={<Wand2 className="h-3.5 w-3.5" />} label="Reference rows (train)" value={q.data ? q.data.knn.referenceSize.toLocaleString() : "—"} />
             <Stat icon={<ShieldCheck className="h-3.5 w-3.5" />} label="Preserved (hormones)" value={q.data ? q.data.params.filter((p) => p.strategy === "preserve").length.toString() : "—"} />
           </div>
 
@@ -83,7 +93,8 @@ export function Preprocessing() {
                       <tr className="bg-muted/40 text-left text-muted-foreground">
                         <th className="px-3 py-1.5 font-medium">Feature</th>
                         <th className="px-3 py-1.5 font-medium">Strategy</th>
-                        <th className="px-3 py-1.5 font-medium">Learned value (train)</th>
+                        <th className="px-3 py-1.5 font-medium">Train mean ± std</th>
+                        <th className="px-3 py-1.5 font-medium">Fallback (train)</th>
                         <th className="px-3 py-1.5 text-right font-medium">Train missing</th>
                         <th className="px-3 py-1.5 font-medium">Rationale</th>
                       </tr>
@@ -93,11 +104,16 @@ export function Preprocessing() {
                         <tr key={spec.key} className="border-t border-border/40 align-top">
                           <td className="px-3 py-1.5">{spec.label}<div className="text-[10px] text-muted-foreground">{spec.key}</div></td>
                           <td className="px-3 py-1.5">
-                            <span className={`inline-flex rounded border px-1.5 py-0.5 text-[10px] font-medium capitalize ${STRATEGY_STYLE[spec.strategy]}`}>{spec.strategy}</span>
+                            <span className={`inline-flex rounded border px-1.5 py-0.5 text-[10px] font-medium ${STRATEGY_STYLE[spec.strategy]}`}>{STRATEGY_LABEL[spec.strategy] ?? spec.strategy}</span>
                           </td>
                           <td className="px-3 py-1.5 tabular-nums">
-                            {spec.strategy === "median" || spec.strategy === "mode"
-                              ? (param?.value === null || param?.value === undefined ? "—" : fmtVal(param!.value))
+                            {param && param.mean !== null && param.std !== null
+                              ? `${fmtNum(param.mean)} ± ${fmtNum(param.std)}`
+                              : <span className="text-muted-foreground">n/a</span>}
+                          </td>
+                          <td className="px-3 py-1.5 tabular-nums">
+                            {spec.strategy === "knn-continuous" || spec.strategy === "knn-categorical"
+                              ? (param?.fallback === null || param?.fallback === undefined ? "—" : fmtVal(param!.fallback!))
                               : <span className="text-muted-foreground">n/a</span>}
                           </td>
                           <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">
@@ -141,12 +157,15 @@ export function Preprocessing() {
 
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-[11px] leading-relaxed text-muted-foreground">
             <span className="font-medium text-foreground">Reproducibility · </span>
-            The learned imputers above form the preprocessing artifact. At inference (or when new mcPHASES batches arrive), apply exactly this pipeline in order:
-            <span className="mt-1 block">1&nbsp;· coerce placeholder tokens (<code className="rounded bg-background px-1">-</code>, <code className="rounded bg-background px-1">--</code>, <code className="rounded bg-background px-1">NA</code>, empty) to NULL &nbsp;·&nbsp; 2&nbsp;· cast continuous / hormone fields to numeric &nbsp;·&nbsp; 3&nbsp;· fill continuous NULLs with the train medians &nbsp;·&nbsp; 4&nbsp;· fill ordinal self-reports with the train modes &nbsp;·&nbsp; 5&nbsp;· leave hormone NULLs untouched — the hormone regression model fills them at prediction time.</span>
+            The learned artifact (train reference matrix, per-feature mean/std, per-feature fallback) is applied verbatim at inference. Pipeline:
+            <span className="mt-1 block">1&nbsp;· coerce placeholder tokens (<code className="rounded bg-background px-1">-</code>, <code className="rounded bg-background px-1">--</code>, <code className="rounded bg-background px-1">NA</code>, empty) to NULL &nbsp;·&nbsp; 2&nbsp;· cast continuous / hormone fields to numeric &nbsp;·&nbsp; 3&nbsp;· z-score using train mean/std &nbsp;·&nbsp; 4&nbsp;· find the K={q.data?.knn.k ?? 5} nearest training rows (Euclidean over jointly observed features) &nbsp;·&nbsp; 5&nbsp;· fill continuous NULLs with the neighbor mean, ordinal NULLs with the neighbor mode &nbsp;·&nbsp; 6&nbsp;· if no neighbor observed the target, fall back to the train median / mode &nbsp;·&nbsp; 7&nbsp;· leave hormone NULLs untouched — the hormone regression model fills them at prediction time.</span>
+            {q.data && (
+              <span className="mt-2 block text-[10px]">Distance metric · {q.data.knn.distanceMetric}. {q.data.knn.notes}</span>
+            )}
           </div>
 
           {q.data && (
-            <div className="text-[10px] text-muted-foreground">Fit {new Date(q.data.refreshedAt).toLocaleString()} · imputers learned on train split only</div>
+            <div className="text-[10px] text-muted-foreground">Fit {new Date(q.data.refreshedAt).toLocaleString()} · KNN imputer (k={q.data.knn.k}) learned on train split only</div>
           )}
         </CardContent>
       </Card>
@@ -155,7 +174,7 @@ export function Preprocessing() {
 }
 
 function avgImputable(rec: Record<string, number>, specs: { key: string; strategy: string }[]): number {
-  const imp = specs.filter((s) => s.strategy === "median" || s.strategy === "mode");
+  const imp = specs.filter((s) => s.strategy === "knn-continuous" || s.strategy === "knn-categorical");
   if (!imp.length) return 0;
   let sum = 0;
   for (const s of imp) sum += rec[s.key] ?? 0;
@@ -174,6 +193,12 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
 function fmtVal(v: number | string): string {
   if (typeof v === "number") return Number.isInteger(v) ? v.toString() : v.toFixed(2);
   return String(v);
+}
+
+function fmtNum(v: number): string {
+  if (Math.abs(v) >= 100) return v.toFixed(0);
+  if (Math.abs(v) >= 10) return v.toFixed(1);
+  return v.toFixed(2);
 }
 
 function fmt(v: unknown): string {
