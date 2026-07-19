@@ -3,8 +3,8 @@ import type { TelemetryEntry, UserProfile, ResearchExportPacket } from "./types"
 import { EXPORT_SCHEMA_VERSION } from "./types";
 import { generateSeed } from "./seed";
 
-const ENTRIES_KEY = "hnhh.entries.v1";
-const PROFILE_KEY = "hnhh.profile.v1";
+const ENTRIES_KEY = "hnhh.entries.v2";
+const PROFILE_KEY = "hnhh.profile.v2";
 
 const DEFAULT_PROFILE: UserProfile = {
   id: "local-user",
@@ -41,13 +41,8 @@ export function HormonalStoreProvider({ children }: { children: React.ReactNode 
       const rawP = localStorage.getItem(PROFILE_KEY);
       const p: UserProfile = rawP ? { ...DEFAULT_PROFILE, ...JSON.parse(rawP) } : DEFAULT_PROFILE;
       const rawE = localStorage.getItem(ENTRIES_KEY);
-      let e: TelemetryEntry[];
-      if (rawE) {
-        e = JSON.parse(rawE);
-      } else {
-        e = generateSeed(p.cycleLength, p.lutealLength, 30);
-        localStorage.setItem(ENTRIES_KEY, JSON.stringify(e));
-      }
+      const e: TelemetryEntry[] = rawE ? JSON.parse(rawE) : [];
+      // No demo seeding. Users log entries manually or ingest real datasets.
       if (!rawP) localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
       setProfileState(p);
       setEntries(e);
@@ -86,8 +81,8 @@ export function HormonalStoreProvider({ children }: { children: React.ReactNode 
     deleteEntry: (id) => persistEntries(entries.filter((e) => e.id !== id)),
     setProfile: persistProfile,
     resetSeed: () => {
-      const fresh = generateSeed(profile.cycleLength, profile.lutealLength, 30);
-      persistEntries(fresh);
+      // Demo data removed — kept as a no-op so Settings' "reset" clears entries.
+      persistEntries([]);
     },
     clearAll: () => persistEntries([]),
   };

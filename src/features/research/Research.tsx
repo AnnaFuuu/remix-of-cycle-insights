@@ -29,7 +29,7 @@ const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal
 
 export function Research() {
   const { ready, entries, profile, setProfile } = useHormonalStore();
-  const [cohort] = React.useState(() => generateCohort(40, 28, 14));
+  const cohort = React.useMemo(() => generateCohort(40, 28, 14), []);
   const narrateFn = useServerFn(generateNarrative);
   const [narrative, setNarrative] = React.useState<string | null>(null);
   const [narrating, setNarrating] = React.useState(false);
@@ -74,7 +74,7 @@ export function Research() {
     URL.revokeObjectURL(url);
   };
 
-  const latest = entries[entries.length - 1];
+  const latest = entries.length ? entries[entries.length - 1] : null;
 
   return (
     <div className="space-y-6 pb-10">
@@ -162,10 +162,16 @@ export function Research() {
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base">Endocrine baseline comparison</CardTitle>
-            <CardDescription>Latest biomarker read vs population normative range for phase <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span>.</CardDescription>
+            <CardDescription>
+              {latest ? (
+                <>Latest biomarker read vs population normative range for phase <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span>.</>
+              ) : (
+                <>N/A — no telemetry logged yet.</>
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {(["estrogen", "progesterone", "lh", "fsh"] as const).map((k) => {
+            {latest ? (["estrogen", "progesterone", "lh", "fsh"] as const).map((k) => {
               const range = BASELINE[k][latest.phase];
               const v = latest.biomarkers[k];
               const min = range[0], max = range[1];
@@ -187,14 +193,14 @@ export function Research() {
                   </div>
                 </div>
               );
-            })}
+            }) : <div className="text-xs text-muted-foreground">Log an entry to compare against baseline.</div>}
           </CardContent>
         </Card>
 
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base"><Database className="h-4 w-4 text-primary" /> Synthetic benchmark cohort</CardTitle>
-            <CardDescription>{cohort.length} deterministic synthetic subjects for pipeline testing.</CardDescription>
+            <CardDescription>{cohort.length ? `${cohort.length} deterministic synthetic subjects for pipeline testing.` : "N/A — synthetic cohort disabled. Ingest real datasets from the importer above."}</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="preview">

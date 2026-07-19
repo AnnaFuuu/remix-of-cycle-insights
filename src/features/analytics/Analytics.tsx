@@ -1,6 +1,7 @@
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -15,6 +16,14 @@ const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal
 export function Analytics() {
   const { ready, entries } = useHormonalStore();
   if (!ready) return <PageSkeleton />;
+  if (!entries.length) {
+    return (
+      <>
+        <PageHeader eyebrow="Analytics" title="Longitudinal analytics" description="N/A — no telemetry logged." />
+        <EmptyData />
+      </>
+    );
+  }
 
   const trend = entries.map((e) => ({
     date: e.date.slice(5),

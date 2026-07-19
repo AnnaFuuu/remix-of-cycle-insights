@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { ANALYTE_LABEL } from "@/lib/clinical/reference-ranges";
 import type { AssayFlag, LabPanel } from "@/lib/clinical/types";
 
@@ -21,9 +22,17 @@ function FlagPill({ flag }: { flag: AssayFlag }) {
 export function Laboratory() {
   const { ready } = useHormonalStore();
   const { panels } = useClinical();
-  const [selected, setSelected] = React.useState<LabPanel>(panels[panels.length - 1]);
+  const [selected, setSelected] = React.useState<LabPanel | null>(panels[panels.length - 1] ?? null);
 
   if (!ready) return <PageSkeleton />;
+  if (!panels.length || !selected) {
+    return (
+      <>
+        <PageHeader eyebrow="Data · Endocrine" title="Laboratory results" description="N/A — no lab panels ingested." />
+        <EmptyData />
+      </>
+    );
+  }
 
   const flagCounts = panels.reduce(
     (acc, p) => {

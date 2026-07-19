@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { runFoundationModel } from "@/lib/clinical/model";
 import { ANALYTE_LABEL } from "@/lib/clinical/reference-ranges";
 import { ResponsiveContainer, ComposedChart, Line, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend, BarChart, Bar } from "recharts";
@@ -16,8 +17,20 @@ const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal
 export function FoundationModel() {
   const { ready, entries } = useHormonalStore();
   const { wearables, panels } = useClinical();
-  const pred = React.useMemo(() => runFoundationModel({ entries, wearables, panels }), [entries, wearables, panels]);
+  const hasData = entries.length > 0 || wearables.length > 0 || panels.length > 0;
+  const pred = React.useMemo(
+    () => (hasData ? runFoundationModel({ entries, wearables, panels }) : null),
+    [entries, wearables, panels, hasData],
+  );
   if (!ready) return <PageSkeleton />;
+  if (!pred) {
+    return (
+      <>
+        <PageHeader eyebrow="Foundation model" title="Phase & endocrine forecast" description="N/A — model requires ingested telemetry, wearables, or lab panels." />
+        <EmptyData hint="Import an mcPHASES table (Research Portal) or log entries in the Telemetry Log to enable inference." />
+      </>
+    );
+  }
 
   return (
     <div className="pb-10">
