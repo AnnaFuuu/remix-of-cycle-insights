@@ -11,6 +11,7 @@ import { byPhase, mean, pearson, rollingAvg } from "@/lib/hormonal/analytics";
 import { PHASE_ACCENT } from "@/lib/hormonal/phase";
 import type { HormonalPhase } from "@/lib/hormonal/types";
 import { TrainValTestSplit } from "./TrainValTestSplit";
+import { FeatureEngineering } from "./FeatureEngineering";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -20,8 +21,9 @@ export function Analytics() {
   if (!entries.length) {
     return (
       <>
-        <PageHeader eyebrow="Model training" title="Analytics · Step 1 dataset split" description="Participant-level stratified 60/20/20 split over the mcPHASES cohort. Local telemetry is empty — longitudinal charts below become active once entries are logged." />
+        <PageHeader eyebrow="Model training" title="Analytics · training pipeline" description="Step 1 stratifies participants into train / val / test (70/15/15, no leakage). Step 2 aggregates raw wearable streams into one row per participant per study day for both the hormone regression and the phase classifier." />
         <TrainValTestSplit />
+        <FeatureEngineering />
         <EmptyData />
       </>
     );
@@ -85,6 +87,7 @@ export function Analytics() {
       />
 
       <TrainValTestSplit />
+      <FeatureEngineering />
 
       <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-3 sm:px-8">
         <CorrCard label="Sleep quality ↔ Mood" r={corrSleepMood} />
