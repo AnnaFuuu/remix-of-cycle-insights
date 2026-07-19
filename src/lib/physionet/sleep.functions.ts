@@ -75,7 +75,7 @@ export const importSleepCsv = createServerFn({ method: "POST" })
         latency_min: r.latency_min,
         waso_min: r.waso_min,
         quality_score: r.quality_score,
-        raw: r.raw,
+        raw: r.raw as unknown as never,
       }));
       const { error } = await supabaseAdmin.from("physionet_sleep_records").insert(chunk);
       if (error) throw new Error(`row batch ${i} failed: ${error.message}`);
