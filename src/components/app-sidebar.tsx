@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, LayoutDashboard, LineChart, FlaskConical, Settings, HeartPulse, TestTube, Watch, Dna, ShieldAlert, Brain, Lightbulb, Bot } from "lucide-react";
+import { Activity, LayoutDashboard, LineChart, FlaskConical, Settings, HeartPulse, TestTube, Watch, Dna, ShieldAlert } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,6 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/lib/i18n";
-import { useCopilot } from "@/components/agent/CopilotProvider";
 import { useResearcherMode } from "@/lib/researcher-mode";
 
 const groups = [
@@ -37,13 +36,6 @@ const groups = [
     items: [
       { key: "nav.quality", url: "/quality", icon: ShieldAlert },
       { key: "nav.analytics", url: "/analytics", icon: LineChart },
-    ],
-  },
-  {
-    label: "nav.group.ai",
-    items: [
-      { key: "nav.model", url: "/model", icon: Brain },
-      { key: "nav.xai", url: "/xai", icon: Lightbulb },
     ],
   },
   {
