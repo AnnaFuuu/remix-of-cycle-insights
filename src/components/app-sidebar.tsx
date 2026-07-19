@@ -52,7 +52,7 @@ const groups = [
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { t } = useI18n();
-  const { open: openCopilot } = useCopilot();
+  const { setOpen: setCopilotOpen } = useCopilot();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -88,7 +88,7 @@ export function AppSidebar() {
                 })}
                 {g.label === "nav.group.ai" && (
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={openCopilot} tooltip={t("nav.copilot")}>
+                    <SidebarMenuButton onClick={() => setCopilotOpen(true)} tooltip={t("nav.copilot")}>
                       <Bot className="h-4 w-4" />
                       <span>{t("nav.copilot")}</span>
                     </SidebarMenuButton>
