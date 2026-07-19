@@ -14,7 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      physionet_datasets: {
+        Row: {
+          citation: string | null
+          description: string | null
+          id: string
+          name: string
+          row_count: number
+          slug: string
+          source_url: string | null
+          subjects_count: number | null
+          uploaded_at: string
+          variables_count: number | null
+        }
+        Insert: {
+          citation?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          row_count?: number
+          slug: string
+          source_url?: string | null
+          subjects_count?: number | null
+          uploaded_at?: string
+          variables_count?: number | null
+        }
+        Update: {
+          citation?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          row_count?: number
+          slug?: string
+          source_url?: string | null
+          subjects_count?: number | null
+          uploaded_at?: string
+          variables_count?: number | null
+        }
+        Relationships: []
+      }
+      physionet_sleep_records: {
+        Row: {
+          awake_min: number | null
+          created_at: string
+          dataset_id: string
+          deep_min: number | null
+          id: string
+          latency_min: number | null
+          light_min: number | null
+          night_index: number | null
+          quality_score: number | null
+          raw: Json | null
+          recording_date: string | null
+          rem_min: number | null
+          sleep_efficiency: number | null
+          subject_id: string
+          total_sleep_min: number | null
+          waso_min: number | null
+        }
+        Insert: {
+          awake_min?: number | null
+          created_at?: string
+          dataset_id: string
+          deep_min?: number | null
+          id?: string
+          latency_min?: number | null
+          light_min?: number | null
+          night_index?: number | null
+          quality_score?: number | null
+          raw?: Json | null
+          recording_date?: string | null
+          rem_min?: number | null
+          sleep_efficiency?: number | null
+          subject_id: string
+          total_sleep_min?: number | null
+          waso_min?: number | null
+        }
+        Update: {
+          awake_min?: number | null
+          created_at?: string
+          dataset_id?: string
+          deep_min?: number | null
+          id?: string
+          latency_min?: number | null
+          light_min?: number | null
+          night_index?: number | null
+          quality_score?: number | null
+          raw?: Json | null
+          recording_date?: string | null
+          rem_min?: number | null
+          sleep_efficiency?: number | null
+          subject_id?: string
+          total_sleep_min?: number | null
+          waso_min?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "physionet_sleep_records_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "physionet_datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
