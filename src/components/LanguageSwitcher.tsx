@@ -14,6 +14,9 @@ export function LanguageSwitcher() {
         <SelectContent align="end">
           <SelectItem value="en">{t("lang.en")}</SelectItem>
           <SelectItem value="zh">{t("lang.zh")}</SelectItem>
+          <SelectItem value="fr">Français</SelectItem>
+          <SelectItem value="it">Italiano</SelectItem>
+          <SelectItem value="de">Deutsch</SelectItem>
         </SelectContent>
       </Select>
     </div>

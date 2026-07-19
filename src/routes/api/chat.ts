@@ -21,9 +21,15 @@ export const Route = createFileRoute("/api/chat")({
         const model = gateway(COPILOT_MODEL);
         const tools = buildTools(body.context);
 
-        const langLine = body.locale === "zh"
-          ? "IMPORTANT: Reply to the user in Simplified Chinese (简体中文), regardless of the input language. Keep tool arguments and JSON in English."
-          : "IMPORTANT: Reply to the user in English.";
+        const langMap: Record<string, string> = {
+          zh: "Simplified Chinese (简体中文)",
+          fr: "French (Français)",
+          it: "Italian (Italiano)",
+          de: "German (Deutsch)",
+          en: "English",
+        };
+        const langName = langMap[body.locale ?? "en"] ?? "English";
+        const langLine = `IMPORTANT: Reply to the user in ${langName}, regardless of the input language. Keep tool arguments and JSON in English.`;
         const result = streamText({
           model,
           system: systemPrompt(body.context) + "\n\n" + langLine,
