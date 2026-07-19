@@ -350,24 +350,24 @@ function FieldInput({
           {f.unit && <span className="ml-1 opacity-60">({f.unit})</span>}
           {!f.allowNA && <span className="ml-1 text-destructive">*</span>}
           {f.info && (
-            <button
-              type="button"
-              onClick={() => setShowInfo((v) => !v)}
-              className="ml-1 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="More info"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-            </button>
+            <span className="relative">
+              <button
+                type="button"
+                onClick={() => setShowInfo((v) => !v)}
+                className="ml-1 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="More info"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+              </button>
+              {showInfo && (
+                <span className="absolute left-full top-1/2 z-10 ml-1.5 w-max max-w-[16rem] -translate-y-1/2 rounded-md border border-border/60 bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm">
+                  {f.info}
+                </span>
+              )}
+            </span>
           )}
         </Label>
       </div>
-      {f.info && showInfo && (
-        <div className="relative">
-          <div className="absolute left-0 top-1 z-10 w-max max-w-[16rem] rounded-md border border-border/60 bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm">
-            {f.info}
-          </div>
-        </div>
-      )}
       <div className="flex items-center gap-2">
         <Input
           type="number"
