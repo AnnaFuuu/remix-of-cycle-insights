@@ -6,8 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
-import type { PredictorInput } from "@/lib/prediction/types";
-import { FlaskConical, Activity, User, Sparkles, HelpCircle } from "lucide-react";
+import type { PredictorInput, PredictionResult } from "@/lib/prediction/types";
+import { predictPhase } from "@/lib/model/predict.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { FlaskConical, Activity, User, Sparkles, HelpCircle, Loader2 } from "lucide-react";
 
 type NumericKey = Exclude<keyof PredictorInput, "cramps" | "bloating">;
 type OrdinalKey = "cramps" | "bloating";
