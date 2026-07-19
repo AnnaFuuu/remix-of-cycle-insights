@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
 import { buildQualityReport } from "@/lib/clinical/quality";
+import { SleepDatasetsPanel } from "@/components/physionet/SleepDatasetsPanel";
 
 export function DataQuality() {
   const { ready, entries } = useHormonalStore();
@@ -131,6 +132,10 @@ export function DataQuality() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="px-6 sm:px-8">
+        <SleepDatasetsPanel variant="quality" />
       </div>
     </div>
   );
