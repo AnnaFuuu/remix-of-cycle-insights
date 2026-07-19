@@ -115,11 +115,11 @@ function Results({ data }: { data: ClassificationResult }) {
           <span className="text-sm font-semibold tracking-tight">Algorithm comparison</span>
           <div className="flex items-center gap-1.5 text-[11px]">
             <Trophy className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-muted-foreground">Winner (mean CV macro-F1):</span>
+            <span className="text-muted-foreground">Winner{winner.cv ? " (mean CV macro-F1)" : ""}:</span>
             <span className={`rounded border px-1.5 py-0.5 font-medium ${ALGO_STYLE[winner.algo]}`}>{winner.label}</span>
             <span className="ml-2 tabular-nums text-muted-foreground">
-              CV F1 <span className="font-semibold text-foreground">{winner.cv.meanMacroF1.toFixed(3)} ± {winner.cv.stdMacroF1.toFixed(3)}</span>
-              {" · "}test F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
+              {winner.cv ? <>CV F1 <span className="font-semibold text-foreground">{winner.cv.meanMacroF1.toFixed(3)} ± {winner.cv.stdMacroF1.toFixed(3)}</span>{" · "}</> : null}
+              test F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
               {" · "}test acc <span className="font-semibold text-foreground">{winner.accuracy.test.toFixed(3)}</span>
             </span>
           </div>
@@ -150,7 +150,7 @@ function Results({ data }: { data: ClassificationResult }) {
                     <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{fmtHp(a.hyperparams)}</td>
                     <td className="px-3 py-1.5 text-right text-muted-foreground"><Timer className="mr-0.5 inline h-3 w-3" />{a.fitMs} ms</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.train, a.macroF1.train, a.logLoss.train)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{fmtCV(a.cv)}</td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{a.cv ? fmtCV(a.cv) : "—"}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.test, a.macroF1.test, a.logLoss.test)}</td>
                   </tr>
                 );
