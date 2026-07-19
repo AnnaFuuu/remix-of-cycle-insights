@@ -46,7 +46,7 @@ const endocrine: FieldSpec[] = [
 
 const wearable: FieldSpec[] = [
   { key: "wristTempDelta", label: "predictor.wristTempDelta", unit: "°C vs baseline", placeholder: "e.g. +0.35", step: "0.01", allowNA: true },
-  { key: "restingHR", label: "predictor.restingHR", unit: "bpm", placeholder: "e.g. 62", allowNA: true },
+  { key: "restingHR", label: "predictor.restingHR", unit: "bpm", placeholder: "e.g. 62", allowNA: true, info: "resting heart rate" },
   { key: "hrv", label: "predictor.hrv", unit: "ms", placeholder: "e.g. 48", allowNA: true },
   { key: "respiratoryRate", label: "predictor.respRate", unit: "br/min", placeholder: "e.g. 15", step: "0.1", allowNA: true },
   { key: "sleepScore", label: "predictor.sleepScore", unit: "0–100", placeholder: "e.g. 78", allowNA: true },
