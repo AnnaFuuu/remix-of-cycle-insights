@@ -146,16 +146,7 @@ export function DataQuality() {
           </CardHeader>
           <CardContent>
             <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-secondary/40 p-4 font-mono text-[11px] leading-relaxed text-foreground">
-{`@article{PhysioNet-mcphases-1.0.0,
-  author  = {Lin, Blue and Li, Jin Yi and Kalani, Kaavya and Truong, Khai and Mariakakis, Alex},
-  title   = {{mcPHASES: A Dataset of Physiological, Hormonal, and Self-reported Events and Symptoms for Menstrual Health Tracking with Wearables}},
-  journal = {{PhysioNet}},
-  year    = {2025},
-  month   = sep,
-  note    = {Version 1.0.0},
-  doi     = {10.13026/zx6a-2c81},
-  url     = {https://doi.org/10.13026/zx6a-2c81}
-}`}
+{`Lin, B., Li, J. Y., Kalani, K., Truong, K., & Mariakakis, A. (2025). mcPHASES: A Dataset of Physiological, Hormonal, and Self-reported Events and Symptoms for Menstrual Health Tracking with Wearables (version 1.0.0). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/zx6a-2c81`}
             </pre>
           </CardContent>
         </Card>
