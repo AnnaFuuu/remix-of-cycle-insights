@@ -9,7 +9,7 @@ const PASSPHRASE = "cycloscope-team";
 
 type Ctx = {
   isResearcher: boolean;
-  unlock: (passphrase: string) => boolean;
+  unlock: () => void;
   lock: () => void;
 };
 
@@ -24,13 +24,9 @@ export function ResearcherModeProvider({ children }: { children: React.ReactNode
   const [isResearcher, setIsResearcher] = React.useState(false);
   React.useEffect(() => { setIsResearcher(readInitial()); }, []);
 
-  const unlock = React.useCallback((passphrase: string) => {
-    if (passphrase.trim() === PASSPHRASE) {
-      try { window.localStorage.setItem(STORAGE_KEY, "on"); } catch { /* ignore */ }
-      setIsResearcher(true);
-      return true;
-    }
-    return false;
+  const unlock = React.useCallback(() => {
+    try { window.localStorage.setItem(STORAGE_KEY, "on"); } catch { /* ignore */ }
+    setIsResearcher(true);
   }, []);
 
   const lock = React.useCallback(() => {
