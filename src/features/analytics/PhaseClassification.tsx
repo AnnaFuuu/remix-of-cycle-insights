@@ -312,3 +312,59 @@ function fmtTrip(acc: number, f1: number, ll: number) {
 function fmtHp(hp: Record<string, number | string>) {
   return Object.entries(hp).filter(([k]) => k !== "seed").map(([k, v]) => `${k}=${v}`).join(" · ");
 }
+function fmtMS(m: number, s: number) {
+  return `${m.toFixed(3)} ± ${s.toFixed(3)}`;
+}
+function fmtCV(cv: AlgoResult["cv"]) {
+  return `${fmtMS(cv.meanAccuracy, cv.stdAccuracy)} / ${fmtMS(cv.meanMacroF1, cv.stdMacroF1)} / ${fmtMS(cv.meanLogLoss, cv.stdLogLoss)}`;
+}
+
+function CVFoldsCard({ data }: { data: ClassificationResult }) {
+  return (
+    <div className="rounded-lg border border-border/60">
+      <div className="border-b border-border/60 bg-muted/30 px-3 py-2">
+        <div className="text-sm font-semibold tracking-tight">
+          {data.cvFolds}-fold cross-validation · per-fold macro-F1 on out-of-fold participants
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          Stratified by participant over the train + validation pool ({data.poolN.toLocaleString()} labeled days).
+          Test set stayed held out for every fold.
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px]">
+          <thead>
+            <tr className="border-t border-border/40 bg-muted/20 text-left text-muted-foreground">
+              <th className="px-3 py-1.5 font-medium">Algorithm</th>
+              {Array.from({ length: data.cvFolds }, (_, i) => (
+                <th key={i} className="px-3 py-1.5 text-right font-medium">Fold {i + 1}</th>
+              ))}
+              <th className="px-3 py-1.5 text-right font-medium">Mean ± std</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono">
+            {data.algos.map((a) => {
+              const best = a.algo === data.bestAlgo;
+              return (
+                <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
+                  <td className="px-3 py-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${ALGO_STYLE[a.algo]}`}>
+                      {a.label}
+                    </span>
+                  </td>
+                  {a.cv.perFold.map((f) => (
+                    <td key={f.fold} className="px-3 py-1.5 text-right tabular-nums">{f.macroF1.toFixed(3)}</td>
+                  ))}
+                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
+                    {fmtMS(a.cv.meanMacroF1, a.cv.stdMacroF1)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
