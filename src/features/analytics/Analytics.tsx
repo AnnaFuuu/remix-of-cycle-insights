@@ -31,6 +31,7 @@ export function Analytics() {
         <Preprocessing />
         <HormoneRegression />
         <PhaseClassification />
+        <EnhancedBenchmark />
         <EmptyData />
       </>
     );
