@@ -1,90 +1,68 @@
-
 ## Goal
 
-Right now Analytics → Step 5 trains three models in memory and shows metrics, but the artifact is thrown away — the Dashboard's **Predict phase** button just echoes the payload. Make training write the winning model to the database so the Dashboard can load it and produce a real phase prediction from user input.
+Hide "Model training" (Data for training models + Analytics) from end users. Only the team/researchers should see it. The trained model already persists in `mcphases_trained_models`, so end users just use `Predict phase` on the Dashboard — no training UI needed. Preserve the 5 pipeline steps intact behind the gate so the hackathon rubric is still demonstrable.
 
 ## Design
 
-Two moving parts: **persist on train**, **infer on predict**.
+### 1. Gate via a role, not a hidden URL
 
-### 1. Storage — new table `mcphases_trained_models`
+Add an `app_role` enum (`admin`, `researcher`, `user`) + `user_roles` table + `has_role()` security-definer function (standard pattern). Any signed-in user without a row defaults to `user`.
 
-Single row per model kind (latest wins). Migration adds:
+- `admin` / `researcher` → sees Model training group + `/quality` + `/analytics`.
+- everyone else → doesn't see the group; direct URL visits redirect to `/`.
 
-```text
-id             uuid pk
-kind           text  ('phase_classifier')   -- room for future models
-algo           text  (softmax_gbrt | random_forest | logistic_regression)
-predictors     jsonb  -- ordered string[] of feature keys
-medians        jsonb  -- Float64Array serialized as number[]
-classes        jsonb  -- ['Menstrual','Follicular','Fertility','Luteal']
-artifact       jsonb  -- the actual trees / weights (winner only)
-metrics        jsonb  -- {accuracy, macroF1, logLoss, perClass} on val+test
-trained_at     timestamptz default now()
-n_train        int
-```
+Seed our own accounts as `researcher` after auth is wired (one-line insert per email once we know them).
 
-Grants: `service_role` all. Nothing to `anon`/`authenticated` — inference goes through a server fn using `supabaseAdmin`.
+### 2. Sidebar
 
-### 2. `trainPhaseClassification` writes the winner
+`app-sidebar.tsx` reads `useIsResearcher()` (thin hook around `has_role` RPC, cached in React Query). The `nav.group.modelTraining` group is filtered out when false. No visual "locked" hint — regular users don't need to know it exists.
 
-After picking `bestAlgo`, serialize `trainedByAlgo[bestAlgo]` (already plain JS objects — trees are `{feature, threshold, left, right, leaf}` nodes, logreg is `{W, b}`) plus `predictors`, `medians`, `CLASSES`, and the metrics of the winner. Upsert into `mcphases_trained_models` (unique on `kind`).
+### 3. Route protection
 
-### 3. New `predictPhase` server fn
+Both `/quality` and `/analytics` get a `beforeLoad` that calls `has_role` and `throw redirect({ to: '/' })` when not a researcher. Keeps the file-based routes in place, no folder move needed (avoids churning `_authenticated/`).
 
-Input: `PredictorInput` from `src/lib/prediction/types.ts`.
+### 4. Remember the 5 runs
 
-Steps:
-1. Load latest row for `kind='phase_classifier'`. Return `{ trained: false }` if none.
-2. Rehydrate `Float64Array` from `medians`.
-3. Build feature vector `x[]` of length `predictors.length`:
-   - map dashboard keys → model keys (table below); missing/N/A → `medians[f]`.
-4. Call `predictProba(model, x)` — same function already in `classification.functions.ts`, factored so the handler can reuse it.
-5. Return `{ trained: true, algo, classes, probabilities, top: {phase, confidence}, trainedAt, usedImputation: string[] }`.
+Today only Step 5 persists (`mcphases_trained_models`). Extend persistence so every step's last successful run is remembered and re-displayed on page load — user (researcher) doesn't have to re-click 5 buttons after a refresh.
 
-Dashboard → model feature map (rest fall back to train medians):
+New table `mcphases_pipeline_runs`:
 
 ```text
-lh              → lh
-estradiol       → estrogen
-bmi             → bmi
-wristTempDelta  → wrist_temp_overnight_mean
-restingHR       → rhr, sleep_rhr
-hrv             → hrv_mean
-respiratoryRate → resp_rate_full
-sleepScore      → sleep_score
-sleepDuration   → sleep_asleep_min   (hours × 60)
-stressScore     → stress_score
-glucose         → glucose_mean
-cramps          → cramps
-bloating        → bloating
-age             → (not a feature — ignored)
+id           uuid pk
+step         text unique  -- 'split' | 'features' | 'preprocess' | 'regression' | 'classification'
+result       jsonb        -- the full ServerFn return payload for that step
+ran_at       timestamptz
+ran_by       uuid null
 ```
 
-### 4. Dashboard UI (`PredictorPanel.tsx`)
+- Each Step's server fn upserts its result by `step` at the end.
+- Each Step panel's loader calls a new `getLastRun(step)` server fn; if present, hydrate the panel from stored `result` instead of showing the empty "Run" state. A "Re-run" button replaces "Run" once cached.
+- Step 5's existing write to `mcphases_trained_models` stays — it's the artifact used by `predictPhase`.
 
-Replace the "prediction pending" placeholder with real output. On click:
+Grants: `researcher`/`admin` read via RLS + `has_role`; `service_role` all. Users never touch it.
 
-- `useMutation(predictPhase)` with the built `PredictorInput`.
-- Loading: spinner in the result card.
-- Not trained: show "No trained model yet — run Step 5 in Analytics." with a link to `/analytics`.
-- Trained: show
-  - Big top phase + confidence %
-  - Four-bar probability breakdown (color per phase, matching the classification page)
-  - Small footer: "Softmax GBRT · trained {relative time} · N features imputed from training medians: LH, Estradiol, …"
+### 5. Auth surface
 
-Also surface the model badge at the top of the card ("Model: Softmax GBRT · trained 2h ago").
+Requires sign-in for the gate to work. If the project doesn't yet have auth, we add Supabase email + Google via the Lovable broker, gated `_authenticated/` layout is already integration-managed. Public dashboard stays public (predict works without login) — only the researcher pages need login. If auth already exists, skip.
 
 ## Files touched
 
-- `supabase/migrations/<ts>_trained_models.sql` — new table + grants
-- `src/lib/model/classification.functions.ts` — export `predictProba` and tree/model types; upsert winner at end of `trainPhaseClassification`
-- `src/lib/model/predict.functions.ts` — new: `getLatestClassifier`, `predictPhase` server fn, feature mapping
-- `src/features/dashboard/PredictorPanel.tsx` — wire button to `useServerFn(predictPhase)`, render result card
-- `src/lib/i18n.tsx` — 5 locales for new strings (`predictor.result.top`, `.confidence`, `.notTrained`, `.trainedAgo`, `.usedMedians`, per-phase names already exist)
+- migration: `app_role` enum, `user_roles`, `has_role()`, `mcphases_pipeline_runs` + grants + RLS
+- `src/hooks/use-role.ts` — new hook `useIsResearcher()`
+- `src/components/app-sidebar.tsx` — filter group by role
+- `src/routes/quality.tsx`, `src/routes/analytics.tsx` — `beforeLoad` role gate
+- `src/lib/model/split.functions.ts`, `features.functions.ts`, `preprocess.functions.ts`, `regression.functions.ts`, `classification.functions.ts` — upsert to `mcphases_pipeline_runs` at end of each handler
+- `src/lib/model/pipeline-runs.functions.ts` — new `getLastRun(step)` + `getAllRuns()` server fns
+- `src/features/analytics/*Panel.tsx` (5 files) — on mount, query cached run; render stored result if present; button label → "Re-run"
+- `src/features/quality/DataQuality.tsx` — no change beyond route gate
 
-## Out of scope (this pass)
+## Open questions
 
-- Per-user personalised models — one global artifact keyed by `kind`.
-- Training from the Dashboard itself — training still happens in Analytics.
-- Reusing the Step-4 hormone-imputation regressors — median fallback is enough for the classifier since it already handles missing hormones during training.
+1. Is Supabase auth already enabled on this project, or should the plan also scaffold sign-in? (Affects scope by ~1 migration + auth pages.)
+2. Which email(s) should be seeded as `researcher` on first login?
+
+## Out of scope
+
+- Admin UI to grant roles (do it via SQL for now).
+- Sharing trained models across environments (single global row per `kind` is enough for the demo).
+- Versioning / history of past runs — we only remember the latest per step.
