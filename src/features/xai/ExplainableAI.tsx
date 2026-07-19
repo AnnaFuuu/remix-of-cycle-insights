@@ -5,14 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { runFoundationModel } from "@/lib/clinical/model";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 export function ExplainableAI() {
   const { ready, entries } = useHormonalStore();
   const { wearables, panels } = useClinical();
-  const pred = React.useMemo(() => runFoundationModel({ entries, wearables, panels }), [entries, wearables, panels]);
+  const hasData = entries.length > 0 || wearables.length > 0 || panels.length > 0;
+  const pred = React.useMemo(
+    () => (hasData ? runFoundationModel({ entries, wearables, panels }) : null),
+    [entries, wearables, panels, hasData],
+  );
   if (!ready) return <PageSkeleton />;
+  if (!pred) {
+    return (
+      <>
+        <PageHeader eyebrow="Explainable AI" title="Local attributions" description="N/A — attributions require a model prediction." />
+        <EmptyData hint="Import a dataset or log entries to enable inference and explanations." />
+      </>
+    );
+  }
 
   const maxAbs = Math.max(...pred.shap.map((s) => Math.abs(s.contribution))) || 1;
 
