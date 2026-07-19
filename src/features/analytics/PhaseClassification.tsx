@@ -160,7 +160,7 @@ function Results({ data }: { data: ClassificationResult }) {
         </div>
       </div>
 
-      <CVFoldsCard data={data} />
+      {data.cvFolds ? <CVFoldsCard data={data} /> : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <PerClassCard winner={winner} classes={data.classes} />
