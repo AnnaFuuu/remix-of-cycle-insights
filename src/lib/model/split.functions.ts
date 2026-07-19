@@ -71,9 +71,9 @@ function stratifiedSplit(
   for (const phase of PHASES) {
     const shuffled = shuffle(groups[phase], rng);
     const n = shuffled.length;
-    // 60/20/20 with rounding: test = round(n*0.2), val = round(n*0.2), train = rest.
-    const nTest = Math.round(n * 0.2);
-    const nVal = Math.round(n * 0.2);
+    // 70/15/15 with rounding: test = round(n*0.15), val = round(n*0.15), train = rest.
+    const nTest = Math.round(n * 0.15);
+    const nVal = Math.round(n * 0.15);
     const nTrain = n - nTest - nVal;
     for (let i = 0; i < shuffled.length; i++) {
       const pid = shuffled[i].participantId;
