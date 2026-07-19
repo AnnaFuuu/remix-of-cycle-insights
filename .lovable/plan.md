@@ -1,62 +1,67 @@
-## Goal
 
-把你上传的 PhysioNet 睡眠 CSV 存进 Lovable Cloud (Postgres)，只在 **Data Quality** 和 **Research Portal** 两个页面里展示，不影响 Wearables / Dashboard 等 synthetic 数据流。
+# Goal
 
-## Steps
+Turn Cycloscope into a real mcPHASES-trained research platform that predicts menstrual cycle phase from multi-modal daily signals. Ingest your `sleep_score.csv` now as the first real predictor, and scaffold every other mcPHASES table from the README as empty slots so you can drop each CSV in later without any schema work.
 
-1. **启用 Lovable Cloud**（一次性）
-   - 调用 `supabase--enable`，得到 Postgres + Data API。
+# Confirmed from your upload
 
-2. **建表 + 权限**（migration）
-   ```
-   physionet_datasets(id, slug, name, source_url, description, uploaded_at, row_count)
-   physionet_sleep_records(
-     id, dataset_id, subject_id, recording_date,
-     total_sleep_min, deep_min, light_min, rem_min, awake_min,
-     sleep_efficiency, latency_min, waso_min, quality_score,
-     raw jsonb
-   )
-   ```
-   - RLS: 公开只读（`GRANT SELECT TO anon, authenticated`），写入走 service_role。
-   - 索引：`(dataset_id, subject_id)`、`(recording_date)`。
+`sleep_score.csv`, 5308 rows, columns exactly:
+`id, study_interval, is_weekend, day_in_study, timestamp, overall_score, composition_score, revitalization_score, duration_score, deep_sleep_in_minutes, resting_heart_rate, restlessness`.
+`study_interval` is stored as `2022` / `2024` (Interval 1 / Interval 2 per README) — I'll keep it as an integer year.
 
-3. **CSV 上传 UI**（Research Portal 新增 "Real datasets" 区块）
-   - 一个 shadcn `Input type="file"` + "Import" 按钮。
-   - 客户端用 PapaParse 解析 header，做列名自动映射（PhysioNet 常见列：`subject`, `night`, `TST`, `SE`, `SOL`, `WASO`, `N1/N2/N3`, `REM` 等）。有映射不明的列弹一个小 mapper 让你手动对齐。
-   - 解析后 POST 到 `saveSleepRecords` server function → 分批 upsert (500 行/批)。
+# Phase 1 — mcPHASES-native schema + sleep_score ingestion (this turn)
 
-4. **Server function**
-   - `src/lib/physionet/sleep.functions.ts`
-     - `listDatasets()` — 返回数据集卡片列表。
-     - `importSleepCsv({ datasetMeta, rows })` — 创建 dataset 行 + 批量插入 records，用 handler 内 `await import` 拿 `supabaseAdmin`。
-     - `getSleepSummary(datasetId)` — 返回聚合：n subjects、n nights、mean TST/SE/deep%/REM%、缺失率、日期范围。
-     - `getSleepQualityDistribution(datasetId)` — 直方图数据（quality_score bins）+ 按 subject 的 boxplot 数据。
+### Data model
 
-5. **Data Quality 页面**（新增 section "External datasets · PhysioNet"）
-   - 每个 dataset 一张 Card：completeness per column、missingness heatmap（subject × night）、outlier count（TST < 3h / > 12h、SE < 40%）、date coverage。
-   - 复用现有 `DataQualityReport` 视觉语言。
+Drop the existing `physionet_sleep_records` (only demo data). Add:
 
-6. **Research Portal 页面**（Datasets 区块扩展）
-   - 在 mcPHASES / NHANES / UKBB 卡片旁边加真实的 PhysioNet 卡片：sample size、subjects、modalities、变量数、provenance（来自 upload metadata）、citation 输入框。
-   - 一个 "Sleep quality distribution" 小图（bar + box）用真实数据渲染，明确 badge："Real data · PhysioNet"。
+- **`mcphases_participants`** — `(participant_id int, first_seen_at, notes)`. Auto-upserted on ingest.
+- **`mcphases_sleep_score`** — mirrors your CSV 1:1: `participant_id, study_interval, day_in_study, timestamp_local, is_weekend, overall_score, composition_score, revitalization_score, duration_score, deep_sleep_in_minutes, resting_heart_rate, restlessness`. Unique key `(participant_id, study_interval, day_in_study)`.
+- **`mcphases_ingest_runs`** — audit row per upload: `table_name, filename, rows_inserted, rows_updated, rows_skipped, participants, errors jsonb, created_at`.
+- **Placeholder tables for every other mcPHASES CSV in the README** (created empty now so the UI, joins, and feature builder can reference them from day one):
+  `mcphases_active_minutes, mcphases_active_zone_minutes, mcphases_altitude, mcphases_calories, mcphases_computed_temperature, mcphases_demographic_vo2_max, mcphases_distance, mcphases_estimated_oxygen_variation, mcphases_exercise, mcphases_glucose, mcphases_heart_rate, mcphases_hrv_details, mcphases_height_weight, mcphases_hormones_selfreport, mcphases_respiratory_rate_summary, mcphases_resting_heart_rate, mcphases_sleep, mcphases_steps, mcphases_stress_score, mcphases_subject_info, mcphases_time_in_hr_zones, mcphases_wrist_temperature`.
+  Each has the exact columns from the README, correct key (day-keyed vs window-keyed vs participant-keyed), unique constraint, and `raw jsonb` fallback for anything unexpected.
 
-7. **i18n**
-   - 5 种语言加 keys：`physionet.upload`, `physionet.mapping`, `physionet.realBadge`, `physionet.summary.*` 等。
+RLS: public `SELECT` on every table (this is research showcase data), writes only via server functions using service role. GRANTs in the same migration.
 
-## Technical notes
+### Importer (generic, registry-driven)
 
-- **不动** `src/lib/clinical/seed-clinical.ts` 与 Wearables/Foundation Model 页；PhysioNet 数据是独立表 + 独立 UI 分区。
-- 上传走 server function（不用 `/api/public/*`，因为只你自己/评审用；后续要开放再加 auth）。
-- CSV 大文件（>5MB）用分批 upsert；给一个 progress bar。
-- 保留 `raw jsonb` 字段方便以后接别的 PhysioNet 表（如 EEG features）不用改 schema。
-- Data Quality 里的 real vs synthetic 用不同 badge 颜色区分。
+- **`src/lib/mcphases/registry.ts`** — one entry per mcPHASES CSV declaring: target table, key columns, column mapping, type coercions, key style (day / window / participant). Every table from the README gets an entry now; `sleep_score` is fully active, the others are marked `status: "scaffold"` (schema exists, importer accepts them, UI shows them as slots).
+- **`src/lib/mcphases/ingest.functions.ts`** — one server function `ingestMcphasesCsv({ table, csvText, filename })`: parses with papaparse, coerces via the registry, upserts participants + rows in 1000-row batches, writes an `mcphases_ingest_runs` row, returns `{ inserted, updated, skipped, participants, errors, stats }`.
+- **`src/lib/mcphases/summary.functions.ts`** — `getMcphasesOverview()` returns per-table row counts, participant counts, day-range coverage, is-populated flag. Drives the Data Quality grid.
 
-## Out of scope
+### UI
 
-- EDF 原始信号解析（这次只处理你已经导出的 CSV summary）。
-- 用 PhysioNet 数据重新训练 Foundation Model —— 目前只做展示 + 质量报告。
-- 用户账号系统（现在所有人共享 dataset）。
+- **Research Portal** — replace the current sleep panel with an **mcPHASES Importer** card: table dropdown (defaults to `sleep_score`, all 22 tables listed with "scaffolded / active" state), file drop, preview of first 5 rows + detected mapping, confirm, progress, per-run summary. Below it: an **Ingest history** table reading `mcphases_ingest_runs`.
+- **Data Quality** — new grid: one card per mcPHASES table showing rows, participants, day coverage, and completeness. Sleep score card is populated after your upload; the others show "Awaiting upload" with a link to the importer.
+- **Foundation Model** and **XAI** pages — add a banner "Model training uses real mcPHASES tables — currently 1 of 22 active (sleep_score). Upload more to enrich features." No behavior change to the mock output yet; the real model lands in phase 2.
 
-## Open question
+# Phase 2 — Real cycle-phase model (after your next CSV upload, likely `hormones_and_selfreport.csv`)
 
-你手上的 CSV 具体是 PhysioNet 哪个 dataset？（Sleep-EDF / SHHS / CAP / MESA / 其它？）不同 dataset 的列命名差别很大，我可以针对性内置一个 mapping preset 而不是每次都手动映射。如果不确定，把 CSV 前几行贴出来或直接上传，我在 build 阶段读一下 header 就行。
+That file carries the `phase` label; without it we can't supervise training. Once it's in:
+
+- **Feature builder** joins active mcPHASES tables on `(participant_id, day_in_study)`, builds rolling 3/7-day windows, handles windowed tables via day expansion.
+- **Trainer** (server function, pure-JS, Worker-safe): logistic regression + gradient-boosted trees predicting `phase ∈ {menstrual, follicular, ovulation, luteal}`; subject-stratified split; persists coefficients + metrics to `mcphases_model_runs`.
+- **Foundation Model page** shows real AUROC / F1 / confusion matrix / per-day predictions with confidence.
+- **XAI page** shows real per-prediction feature attributions (LR contribution decomposition).
+
+We do phase 2 only after phase 1 is verified against your first real upload.
+
+# Assumptions (say if any is wrong)
+
+1. Reset the DB — drop `physionet_sleep_records`. Nothing there but demo rows.
+2. All mcPHASES data is public read in the app.
+3. `study_interval` stored as integer year (`2022` / `2024`) matching your CSV.
+4. `restlessness` stored as `numeric` (already in 0–1 range in your file).
+5. Model training stays server-side in pure JS (no Python). Fine for hackathon scale.
+
+# Technical section
+
+- **Migration**: drop `physionet_sleep_records`; create `mcphases_participants`, `mcphases_ingest_runs`, and all 22 `mcphases_*` tables with GRANT + RLS (public SELECT, service_role ALL) + `updated_at` triggers where applicable. Single migration.
+- **New files**: `src/lib/mcphases/{types.ts, registry.ts, ingest.functions.ts, summary.functions.ts}`, `src/components/mcphases/{McphasesImportPanel.tsx, IngestRunsTable.tsx, TableCoverageGrid.tsx}`.
+- **Removed**: `src/lib/physionet/*`, `src/components/physionet/SleepDatasetsPanel.tsx`.
+- **Wired**: Research Portal uses `McphasesImportPanel` + `IngestRunsTable`; Data Quality uses `TableCoverageGrid`; Foundation Model & XAI get the "1/22 active" banner.
+- **i18n**: new keys for importer + coverage grid in en/zh/fr/it/de.
+- **Deps**: `papaparse` already installed. No new deps in phase 1.
+
+Approve and I'll build phase 1 and ingest your `sleep_score.csv` end-to-end so you can see real rows in the Data Quality grid immediately.
