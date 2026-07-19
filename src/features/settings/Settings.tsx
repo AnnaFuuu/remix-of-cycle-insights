@@ -9,9 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useResearcherMode } from "@/lib/researcher-mode";
+import { KeyRound, Lock } from "lucide-react";
 
 export function Settings() {
   const { ready, profile, setProfile, entries, resetSeed, clearAll } = useHormonalStore();
+  const { isResearcher, unlock, lock } = useResearcherMode();
+  const [passphrase, setPassphrase] = React.useState("");
   const [draft, setDraft] = React.useState(profile);
   React.useEffect(() => setDraft(profile), [profile]);
 
@@ -131,6 +135,49 @@ export function Settings() {
             <Button variant="outline" onClick={downloadAll}>Export all data (JSON)</Button>
             <Button variant="outline" onClick={() => { resetSeed(); toast.success("Seed dataset regenerated"); }}>Regenerate seed data</Button>
             <Button variant="destructive" onClick={() => { if (confirm("Delete all telemetry records? This cannot be undone.")) { clearAll(); toast.success("All records deleted"); } }}>Delete all records</Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              {isResearcher ? <KeyRound className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4" />}
+              Researcher mode
+            </CardTitle>
+            <CardDescription>
+              {isResearcher
+                ? "Model training pages are visible in the sidebar. Lock again to hide them."
+                : "The Model training section (Data for training models · Analytics) is hidden by default. Enter the team passphrase to unlock it on this device."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isResearcher ? (
+              <Button variant="outline" onClick={() => { lock(); toast.success("Researcher mode locked"); }}>
+                Lock researcher mode
+              </Button>
+            ) : (
+              <form
+                className="flex flex-wrap items-end gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (unlock(passphrase)) { toast.success("Researcher mode unlocked"); setPassphrase(""); }
+                  else toast.error("Incorrect passphrase");
+                }}
+              >
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="passphrase" className="text-xs">Team passphrase</Label>
+                  <Input
+                    id="passphrase"
+                    type="password"
+                    value={passphrase}
+                    onChange={(e) => setPassphrase(e.target.value)}
+                    className="w-64"
+                    placeholder="Enter passphrase"
+                  />
+                </div>
+                <Button type="submit" disabled={!passphrase.trim()}>Unlock</Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>

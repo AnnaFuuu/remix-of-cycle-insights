@@ -804,6 +804,27 @@ export type Database = {
         }
         Relationships: []
       }
+      mcphases_pipeline_runs: {
+        Row: {
+          id: string
+          ran_at: string
+          result: Json
+          step: string
+        }
+        Insert: {
+          id?: string
+          ran_at?: string
+          result: Json
+          step: string
+        }
+        Update: {
+          id?: string
+          ran_at?: string
+          result?: Json
+          step?: string
+        }
+        Relationships: []
+      }
       mcphases_respiratory_rate_summary: {
         Row: {
           created_at: string

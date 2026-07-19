@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   type AlgoName,
   type AlgoResult,
 } from "@/lib/model/classification.functions";
+import { getPipelineRun } from "@/lib/model/pipeline-runs.functions";
 import type { PhaseKey } from "@/lib/model/split.functions";
 
 const ALGO_STYLE: Record<AlgoName, string> = {
@@ -29,8 +30,15 @@ const PHASE_COLOR: Record<PhaseKey, string> = {
 
 export function PhaseClassification() {
   const fn = useServerFn(trainPhaseClassification);
+  const getRun = useServerFn(getPipelineRun);
+  const cached = useQuery({
+    queryKey: ["pipeline-run", "classification"],
+    queryFn: () => getRun({ data: { step: "classification" } }),
+    refetchOnWindowFocus: false,
+  });
   const m = useMutation({ mutationFn: () => fn() });
-  const data: ClassificationResult | undefined = m.data;
+  const data: ClassificationResult | undefined = m.data ?? (cached.data?.result as ClassificationResult | undefined);
+
 
   return (
     <div className="space-y-4 px-6 sm:px-8">
