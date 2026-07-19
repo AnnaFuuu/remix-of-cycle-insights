@@ -262,8 +262,8 @@ export const runEnhancedBenchmark = createServerFn({ method: "POST" }).handler(a
     ridge: 0, gbrt_enriched: 0, mlp_enriched: 0, moe_gbrt: 0, hmm_gbrt: 0, hmm_moe: 0,
   };
 
-  const gbrtHp = { nTrees: 120, maxDepth: 5, lr: 0.06, mtry: Math.max(6, Math.floor(Math.sqrt(enrichedKeys.length) * 1.5)), minSamples: 4, candidates: 20, lambda: 1, seed: CV_SEED };
-  const mlpHp  = { hidden: 32, epochs: 40, lr: 0.005, l2: 1e-4, batch: 64, seed: CV_SEED };
+  const gbrtHp = { nTrees: 70, maxDepth: 5, lr: 0.07, mtry: Math.max(5, Math.floor(Math.sqrt(enrichedKeys.length) * 1.5)), minSamples: 4, candidates: 16, lambda: 1, seed: CV_SEED };
+  const mlpHp  = { hidden: 24, epochs: 25, lr: 0.006, l2: 1e-4, batch: 64, seed: CV_SEED };
 
   for (let fi = 0; fi < folds.length; fi++) {
     const valSet = new Set<number>(folds[fi]);
