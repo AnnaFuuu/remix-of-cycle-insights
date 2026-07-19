@@ -104,10 +104,10 @@ function Results({ data }: { data: ClassificationResult }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
-        <Kv label="Train days"  value={data.trainN.toLocaleString()} />
-        <Kv label="Val days"    value={data.valN.toLocaleString()} />
-        <Kv label="Test days"   value={data.testN.toLocaleString()} />
-        <Kv label="Predictors"  value={String(data.predictors.length)} />
+        <Kv label={`CV pool days (${data.cvFolds}-fold)`} value={data.poolN.toLocaleString()} />
+        <Kv label="Held-out test days" value={data.testN.toLocaleString()} />
+        <Kv label="Predictors" value={String(data.predictors.length)} />
+        <Kv label="Pre-split (train / val)" value={`${data.trainN.toLocaleString()} / ${data.valN.toLocaleString()}`} />
       </div>
 
       <div className="rounded-lg border border-border/60">
