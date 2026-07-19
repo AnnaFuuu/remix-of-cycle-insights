@@ -24,7 +24,7 @@ export function Dashboard() {
   if (!entries.length) {
     return (
       <>
-        <PageHeader eyebrow="Dashboard" title="Physiological snapshot" description="Log a first entry to populate telemetry." />
+        <PageHeader eyebrow="Dashboard" title="Know your menstrual phase" description="Log a first entry to populate telemetry." />
         <PredictorPanel />
         <div className="px-6 py-6 sm:px-8 text-sm text-muted-foreground">No telemetry yet — enter predictor variables above or log an entry to populate the trend charts.</div>
       </>
