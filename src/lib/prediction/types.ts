@@ -4,7 +4,6 @@ export interface PredictorInput {
   wristTempDelta: number | null;
   lh: number | null;
   estradiol: number | null;
-  restingHR: number | null;
   hrv: number | null;
   respiratoryRate: number | null;
   sleepScore: number | null;
