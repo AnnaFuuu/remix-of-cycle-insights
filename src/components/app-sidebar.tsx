@@ -50,7 +50,7 @@ const groups = [
 export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { t } = useI18n();
-  const { setOpen: setCopilotOpen } = useCopilot();
+  
   const { isResearcher } = useResearcherMode();
   const visibleGroups = groups.filter((g) => g.label !== "nav.group.modelTraining" || isResearcher);
   return (
