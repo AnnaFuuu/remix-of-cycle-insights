@@ -38,7 +38,7 @@ export function FeatureEngineering() {
             <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Step 2 · Feature engineering</div>
             <CardTitle className="mt-1 text-base font-semibold tracking-tight">Daily features · one row per participant per study day</CardTitle>
             <CardDescription className="text-xs">
-              Wearable time-series (HRV, sleep, sleep-score, RHR, respiratory rate, stress, glucose) aggregated per (participant_id, day_in_study) and joined with self-reported hormones and anthropometrics. This merged frame feeds both the hormone regression and the phase classifier.
+              Wearable time-series (HRV, sleep, sleep-score, RHR, respiratory rate, wrist temperature, stress, glucose) aggregated per (participant_id, day_in_study) and joined with self-reported hormones and anthropometrics. This merged frame feeds both the hormone regression and the phase classifier.
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={() => m.mutate()} disabled={m.isPending || q.isFetching}>
@@ -105,7 +105,7 @@ export function FeatureEngineering() {
                 <table className="w-full text-[10px] font-mono">
                   <thead>
                     <tr className="bg-muted/40 text-left text-muted-foreground">
-                      {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "stress_score", "glucose_mean"].map((k) => (
+                      {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "wrist_temp_overnight_mean", "stress_score", "glucose_mean"].map((k) => (
                         <th key={k} className="whitespace-nowrap px-2.5 py-1.5 font-medium">{k}</th>
                       ))}
                     </tr>
@@ -113,7 +113,7 @@ export function FeatureEngineering() {
                   <tbody>
                     {q.data.preview.map((r, i) => (
                       <tr key={i} className="border-t border-border/40">
-                        {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "stress_score", "glucose_mean"].map((k) => (
+                        {["participant_id", "day_in_study", "phase", "lh", "estrogen", "bmi", "hrv_mean", "sleep_asleep_min", "sleep_score", "rhr", "resp_rate_full", "wrist_temp_overnight_mean", "stress_score", "glucose_mean"].map((k) => (
                           <td key={k} className="whitespace-nowrap px-2.5 py-1 tabular-nums">{fmt(r[k])}</td>
                         ))}
                       </tr>
