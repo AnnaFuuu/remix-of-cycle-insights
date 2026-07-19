@@ -1,86 +1,62 @@
-# Cycloscope → Clinical Research Platform
+## Goal
 
-Pivot Cycloscope from consumer wellness UI into an MIT-hackathon-grade women's hormonal health research platform. Keep local-first storage, i18n, and the Copilot agent — but add clinical data surfaces, a foundation model output view, and a longitudinal research dashboard.
+把你上传的 PhysioNet 睡眠 CSV 存进 Lovable Cloud (Postgres)，只在 **Data Quality** 和 **Research Portal** 两个页面里展示，不影响 Wearables / Dashboard 等 synthetic 数据流。
 
-## 1. Design language
+## Steps
 
-Replace the pastel wellness palette with a clean clinical/biomedical look: near-white background, slate typography, indigo/teal primary, monospace for numeric values, dense tables with hairline borders, calm status colors (green/amber/red) for reference-range flags. Update `src/styles.css` tokens; no gradients on cards.
+1. **启用 Lovable Cloud**（一次性）
+   - 调用 `supabase--enable`，得到 Postgres + Data API。
 
-## 2. Domain model extensions (`src/lib/clinical/`)
+2. **建表 + 权限**（migration）
+   ```
+   physionet_datasets(id, slug, name, source_url, description, uploaded_at, row_count)
+   physionet_sleep_records(
+     id, dataset_id, subject_id, recording_date,
+     total_sleep_min, deep_min, light_min, rem_min, awake_min,
+     sleep_efficiency, latency_min, waso_min, quality_score,
+     raw jsonb
+   )
+   ```
+   - RLS: 公开只读（`GRANT SELECT TO anon, authenticated`），写入走 service_role。
+   - 索引：`(dataset_id, subject_id)`、`(recording_date)`。
 
-New strict-typed modules (kept separate from the existing `hormonal/` store so we don't break current flows):
+3. **CSV 上传 UI**（Research Portal 新增 "Real datasets" 区块）
+   - 一个 shadcn `Input type="file"` + "Import" 按钮。
+   - 客户端用 PapaParse 解析 header，做列名自动映射（PhysioNet 常见列：`subject`, `night`, `TST`, `SE`, `SOL`, `WASO`, `N1/N2/N3`, `REM` 等）。有映射不明的列弹一个小 mapper 让你手动对齐。
+   - 解析后 POST 到 `saveSleepRecords` server function → 分批 upsert (500 行/批)。
 
-- `types.ts` — interfaces:
-  - `LabPanel { id, collectedAt, cycleDay, phase, fasting, lab, assays: LabAssay[] }`
-  - `LabAssay { analyte: LabAnalyte, value, unit, refLow, refHigh, flag: "L"|"N"|"H", method }`
-  - `LabAnalyte` union: `LH | FSH | Estradiol | Progesterone | AMH | Testosterone | DHEA_S | Prolactin | TSH | FreeT4 | Cortisol`
-  - `WearableSample { date, hrv, restingHR, skinTempDelta, respRate, spo2, steps, activeMinutes, sleepStages: { deep, light, rem, awake } }`
-  - `BiomarkerTimepoint`, `DataQualityReport`, `FoundationPrediction { phase, confidence, hormones: {analyte: {mean, ciLow, ciHigh}}, featureImportance: {feature, weight}[], shap: {feature, contribution, direction}[] }`
-- `reference-ranges.ts` — phase-conditioned ranges per analyte with units.
-- `seed-clinical.ts` — deterministic seed for ~6 lab panels + 90 days wearable + FM predictions.
-- `datasets.ts` — static metadata for mcPHASES / NHANES / UK Biobank (sample size, modalities, variable counts, provenance, license, citation).
-- `model.ts` — mock foundation-model inference: derives phase probability, predicted hormone means with 90% CIs, feature importances and SHAP-style contributions from recent wearable+lab data.
-- `quality.ts` — completeness %, missingness heatmap data, outlier counts, drift indicators.
+4. **Server function**
+   - `src/lib/physionet/sleep.functions.ts`
+     - `listDatasets()` — 返回数据集卡片列表。
+     - `importSleepCsv({ datasetMeta, rows })` — 创建 dataset 行 + 批量插入 records，用 handler 内 `await import` 拿 `supabaseAdmin`。
+     - `getSleepSummary(datasetId)` — 返回聚合：n subjects、n nights、mean TST/SE/deep%/REM%、缺失率、日期范围。
+     - `getSleepQualityDistribution(datasetId)` — 直方图数据（quality_score bins）+ 按 subject 的 boxplot 数据。
 
-## 3. New routes & pages
+5. **Data Quality 页面**（新增 section "External datasets · PhysioNet"）
+   - 每个 dataset 一张 Card：completeness per column、missingness heatmap（subject × night）、outlier count（TST < 3h / > 12h、SE < 40%）、date coverage。
+   - 复用现有 `DataQualityReport` 视觉语言。
 
-Create under `src/routes/` and `src/features/`:
+6. **Research Portal 页面**（Datasets 区块扩展）
+   - 在 mcPHASES / NHANES / UKBB 卡片旁边加真实的 PhysioNet 卡片：sample size、subjects、modalities、变量数、provenance（来自 upload metadata）、citation 输入框。
+   - 一个 "Sleep quality distribution" 小图（bar + box）用真实数据渲染，明确 badge："Real data · PhysioNet"。
 
-| Route | Feature file | Purpose |
-|---|---|---|
-| `/labs` | `features/labs/Laboratory.tsx` | Endocrine panel table with reference ranges, L/N/H flags, unit column, per-panel drawer |
-| `/wearables` | `features/wearables/Wearables.tsx` | HRV/RHR/SkinTemp/RespRate/SpO₂/Steps/ActiveMin/Sleep-stage charts |
-| `/biomarkers` | `features/biomarkers/Biomarkers.tsx` | Longitudinal per-analyte trajectories vs phase overlay |
-| `/quality` | `features/quality/DataQuality.tsx` | Completeness, missingness heatmap, outliers, sensor uptime |
-| `/model` | `features/model/FoundationModel.tsx` | Phase prediction + confidence, predicted hormones with CIs, feature importance bar chart, SHAP cards |
-| `/xai` | `features/xai/Explainability.tsx` | Per-prediction SHAP waterfall, counterfactual sliders, cohort attribution |
-| `/research` | rewrite `features/research/Research.tsx` | Add datasets summary (mcPHASES, NHANES, UK Biobank) with sample size / modalities / variables / provenance cards; keep JSON export + narrative |
-| `/` (Dashboard) | rewrite `features/dashboard/Dashboard.tsx` | Longitudinal research dashboard: 7d/30d/90d/1y tab switcher, synchronized plots for hormones, wearables, symptoms, BBT, cycle events |
-
-Sidebar (`components/app-sidebar.tsx`) grouped:
-- **Overview**: Dashboard
-- **Data**: Laboratory, Wearables, Biomarkers, Telemetry Log, Data Quality
-- **AI**: Foundation Model, Explainability, Copilot
-- **Research**: Research Portal, Settings
-
-## 4. Longitudinal research dashboard
-
-Replace current Dashboard with a stacked, x-axis-synchronized Recharts layout:
-- Timescale tabs: 7d / 30d / 90d / 1y (1y uses weekly aggregation).
-- Row 1: hormone trajectories (E2, P4, LH, FSH) from lab panels + interpolated FM predictions with CI band.
-- Row 2: wearable strip (HRV, RHR, skin temp delta).
-- Row 3: BBT line with phase shading.
-- Row 4: symptom heatstrip (cramps/fatigue/mood 0–10).
-- Row 5: menstrual cycle event markers (period start, ovulation estimate, luteal onset).
-- Hovering any chart highlights the same date across all rows (shared tooltip via `syncId`).
-
-## 5. Foundation Model Output page
-
-- Header: current predicted phase, confidence gauge, model card badge (name, version, training corpus).
-- Predicted hormone panel: table with predicted mean + 90% CI + observed value if available + delta.
-- Feature importance: horizontal bar chart (top 10 features).
-- SHAP cards: per top feature a card with contribution magnitude, direction chip, and one-line clinical rationale.
-- Uncertainty band chart: predicted E2/P4 over next 14 days with shaded CI.
-
-## 6. Research Portal additions
-
-Keep existing JSON export + Copilot narrative. Add a **Datasets** section: card grid for mcPHASES, NHANES, UK Biobank with sample size, modalities (self-report / wearable / labs / imaging), variable count, provenance URL, license, and a "used for pretraining" pill. Add a compact provenance/citation block per dataset.
-
-## 7. i18n
-
-Add all new UI strings to `src/lib/i18n.tsx` under new namespaces (`labs`, `wearables`, `biomarkers`, `quality`, `model`, `xai`, `datasets`, `dashboard`) for all five locales. Where a clinical term has no established translation, keep English (e.g., "SHAP", "AMH").
-
-## 8. Non-goals / preserved
-
-- Keep local-first storage; no Cloud enablement.
-- Keep existing Telemetry Log, Analytics, Settings, Copilot agent, i18n, and export schema working.
-- No changes to auth, no new secrets, no model swap.
+7. **i18n**
+   - 5 种语言加 keys：`physionet.upload`, `physionet.mapping`, `physionet.realBadge`, `physionet.summary.*` 等。
 
 ## Technical notes
 
-- Recharts already installed; use `syncId` for synchronized cursors.
-- Foundation model output is a deterministic mock (`clinical/model.ts`) — no extra LLM calls.
-- Reference ranges are static, phase-aware; flag computation is pure.
-- Dataset metadata is a hard-coded constant, not fetched.
-- All new pages are client-rendered under existing shell; each route file gets its own `head()` with title + description.
-- No changes to `src/routes/api/chat.ts` schema; Copilot continues to work via existing store.
+- **不动** `src/lib/clinical/seed-clinical.ts` 与 Wearables/Foundation Model 页；PhysioNet 数据是独立表 + 独立 UI 分区。
+- 上传走 server function（不用 `/api/public/*`，因为只你自己/评审用；后续要开放再加 auth）。
+- CSV 大文件（>5MB）用分批 upsert；给一个 progress bar。
+- 保留 `raw jsonb` 字段方便以后接别的 PhysioNet 表（如 EEG features）不用改 schema。
+- Data Quality 里的 real vs synthetic 用不同 badge 颜色区分。
+
+## Out of scope
+
+- EDF 原始信号解析（这次只处理你已经导出的 CSV summary）。
+- 用 PhysioNet 数据重新训练 Foundation Model —— 目前只做展示 + 质量报告。
+- 用户账号系统（现在所有人共享 dataset）。
+
+## Open question
+
+你手上的 CSV 具体是 PhysioNet 哪个 dataset？（Sleep-EDF / SHHS / CAP / MESA / 其它？）不同 dataset 的列命名差别很大，我可以针对性内置一个 mapping preset 而不是每次都手动映射。如果不确定，把 CSV 前几行贴出来或直接上传，我在 build 阶段读一下 header 就行。
