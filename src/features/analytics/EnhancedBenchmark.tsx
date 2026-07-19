@@ -31,7 +31,7 @@ export function EnhancedBenchmark() {
   const cached = useQuery({
     queryKey: ["pipeline-run", "enhanced_benchmark"],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryFn: () => getRun({ data: { step: "enhanced_benchmark" as any } }),
+    queryFn: () => getRun({ data: { step: "enhanced_benchmark" } }),
     refetchOnWindowFocus: false,
   });
   const m = useMutation({ mutationFn: () => fn() });
