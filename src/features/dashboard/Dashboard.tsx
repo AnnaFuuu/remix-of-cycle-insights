@@ -25,7 +25,8 @@ export function Dashboard() {
     return (
       <>
         <PageHeader eyebrow="Dashboard" title="Physiological snapshot" description="Log a first entry to populate telemetry." />
-        <div className="p-6 text-sm text-muted-foreground">No telemetry yet.</div>
+        <PredictorPanel />
+        <div className="px-6 py-6 sm:px-8 text-sm text-muted-foreground">No telemetry yet — enter predictor variables above or log an entry to populate the trend charts.</div>
       </>
     );
   }
