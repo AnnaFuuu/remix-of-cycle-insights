@@ -313,7 +313,7 @@ export const runEnhancedBenchmark = createServerFn({ method: "POST" }).handler(a
       const Xc = mask.map((i) => tr.X[i]);
       const yc = new Int32Array(mask.length); for (let i = 0; i < mask.length; i++) yc[i] = tr.y[mask[i]];
       const cwc = classWeightFor(yc);
-      experts[c] = fitSoftmaxGBRT(Xc, yc, { ...gbrtHp, nTrees: 80, classWeight: cwc });
+      experts[c] = fitSoftmaxGBRT(Xc, yc, { ...gbrtHp, nTrees: 50, classWeight: cwc });
     }
     fitMs.moe_gbrt += performance.now() - t0;
     const probsMoE = va.X.map((x, i) => {
