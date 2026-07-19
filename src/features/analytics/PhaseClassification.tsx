@@ -55,13 +55,16 @@ export function PhaseClassification() {
               <CardDescription className="text-xs">
                 Four-class target (<span className="font-medium">Menstrual · Follicular · Fertility · Luteal</span>).
                 Predictors = all non-phase, non-identifier features (LH / E3G / PdG included when observed; the
-                Step-4 imputer fills them for new users). Three algorithms compete under the same participant-level
-                split: <span className="font-medium">Softmax GBRT</span> (multi-class gradient-boosted trees, the
-                literature-preferred choice for tabular data — Grinsztajn et al. NeurIPS 2022; Shwartz-Ziv & Armon
-                2022), <span className="font-medium">Random Forest</span> (Gini, majority vote), and
-                <span className="font-medium"> multinomial logistic regression</span> as a linear baseline.
-                Winner = highest <span className="font-medium">macro-F1 on validation</span>; class weights =
-                inverse train frequency to handle imbalance.
+                Step-4 imputer fills them for new users). Three algorithms compete under
+                <span className="font-medium"> 5-fold stratified cross-validation by participant</span> over the
+                pre-split <span className="font-medium">train + validation</span> pool — the test set stays held
+                out. Algorithms: <span className="font-medium">Softmax GBRT</span> (multi-class gradient-boosted
+                trees, the literature-preferred choice for tabular data — Grinsztajn et al. NeurIPS 2022;
+                Shwartz-Ziv &amp; Armon 2022), <span className="font-medium">Random Forest</span> (Gini, majority
+                vote), and <span className="font-medium">multinomial logistic regression</span> as a linear
+                baseline. Winner = highest <span className="font-medium">mean CV macro-F1</span>; then refit on the
+                full pool and scored on the held-out test set. Class weights = inverse fold-train frequency;
+                imputation uses fold-train medians (no leakage).
               </CardDescription>
             </div>
             <Button size="sm" onClick={() => m.mutate()} disabled={m.isPending}>
@@ -101,10 +104,10 @@ function Results({ data }: { data: ClassificationResult }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-3 text-[11px] sm:grid-cols-4">
-        <Kv label="Train days"  value={data.trainN.toLocaleString()} />
-        <Kv label="Val days"    value={data.valN.toLocaleString()} />
-        <Kv label="Test days"   value={data.testN.toLocaleString()} />
-        <Kv label="Predictors"  value={String(data.predictors.length)} />
+        <Kv label={`CV pool days (${data.cvFolds}-fold)`} value={data.poolN.toLocaleString()} />
+        <Kv label="Held-out test days" value={data.testN.toLocaleString()} />
+        <Kv label="Predictors" value={String(data.predictors.length)} />
+        <Kv label="Pre-split (train / val)" value={`${data.trainN.toLocaleString()} / ${data.valN.toLocaleString()}`} />
       </div>
 
       <div className="rounded-lg border border-border/60">
@@ -112,10 +115,11 @@ function Results({ data }: { data: ClassificationResult }) {
           <span className="text-sm font-semibold tracking-tight">Algorithm comparison</span>
           <div className="flex items-center gap-1.5 text-[11px]">
             <Trophy className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-muted-foreground">Best on val:</span>
+            <span className="text-muted-foreground">Winner (mean CV macro-F1):</span>
             <span className={`rounded border px-1.5 py-0.5 font-medium ${ALGO_STYLE[winner.algo]}`}>{winner.label}</span>
             <span className="ml-2 tabular-nums text-muted-foreground">
-              test macro-F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
+              CV F1 <span className="font-semibold text-foreground">{winner.cv.meanMacroF1.toFixed(3)} ± {winner.cv.stdMacroF1.toFixed(3)}</span>
+              {" · "}test F1 <span className="font-semibold text-foreground">{winner.macroF1.test.toFixed(3)}</span>
               {" · "}test acc <span className="font-semibold text-foreground">{winner.accuracy.test.toFixed(3)}</span>
             </span>
           </div>
@@ -128,7 +132,7 @@ function Results({ data }: { data: ClassificationResult }) {
                 <th className="px-3 py-1.5 font-medium">Hyperparameters</th>
                 <th className="px-3 py-1.5 text-right font-medium">Fit</th>
                 <th className="px-3 py-1.5 text-right font-medium">Train acc / F1 / logloss</th>
-                <th className="px-3 py-1.5 text-right font-medium">Val acc / F1 / logloss</th>
+                <th className="px-3 py-1.5 text-right font-medium">CV mean ± std · acc / F1 / logloss</th>
                 <th className="px-3 py-1.5 text-right font-medium">Test acc / F1 / logloss</th>
               </tr>
             </thead>
@@ -146,7 +150,7 @@ function Results({ data }: { data: ClassificationResult }) {
                     <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{fmtHp(a.hyperparams)}</td>
                     <td className="px-3 py-1.5 text-right text-muted-foreground"><Timer className="mr-0.5 inline h-3 w-3" />{a.fitMs} ms</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.train, a.macroF1.train, a.logLoss.train)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.val, a.macroF1.val, a.logLoss.val)}</td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{fmtCV(a.cv)}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.test, a.macroF1.test, a.logLoss.test)}</td>
                   </tr>
                 );
@@ -155,6 +159,8 @@ function Results({ data }: { data: ClassificationResult }) {
           </table>
         </div>
       </div>
+
+      <CVFoldsCard data={data} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <PerClassCard winner={winner} classes={data.classes} />
@@ -306,3 +312,59 @@ function fmtTrip(acc: number, f1: number, ll: number) {
 function fmtHp(hp: Record<string, number | string>) {
   return Object.entries(hp).filter(([k]) => k !== "seed").map(([k, v]) => `${k}=${v}`).join(" · ");
 }
+function fmtMS(m: number, s: number) {
+  return `${m.toFixed(3)} ± ${s.toFixed(3)}`;
+}
+function fmtCV(cv: AlgoResult["cv"]) {
+  return `${fmtMS(cv.meanAccuracy, cv.stdAccuracy)} / ${fmtMS(cv.meanMacroF1, cv.stdMacroF1)} / ${fmtMS(cv.meanLogLoss, cv.stdLogLoss)}`;
+}
+
+function CVFoldsCard({ data }: { data: ClassificationResult }) {
+  return (
+    <div className="rounded-lg border border-border/60">
+      <div className="border-b border-border/60 bg-muted/30 px-3 py-2">
+        <div className="text-sm font-semibold tracking-tight">
+          {data.cvFolds}-fold cross-validation · per-fold macro-F1 on out-of-fold participants
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          Stratified by participant over the train + validation pool ({data.poolN.toLocaleString()} labeled days).
+          Test set stayed held out for every fold.
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px]">
+          <thead>
+            <tr className="border-t border-border/40 bg-muted/20 text-left text-muted-foreground">
+              <th className="px-3 py-1.5 font-medium">Algorithm</th>
+              {Array.from({ length: data.cvFolds }, (_, i) => (
+                <th key={i} className="px-3 py-1.5 text-right font-medium">Fold {i + 1}</th>
+              ))}
+              <th className="px-3 py-1.5 text-right font-medium">Mean ± std</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono">
+            {data.algos.map((a) => {
+              const best = a.algo === data.bestAlgo;
+              return (
+                <tr key={a.algo} className={`border-t border-border/40 ${best ? "bg-amber-500/5" : ""}`}>
+                  <td className="px-3 py-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${ALGO_STYLE[a.algo]}`}>
+                      {a.label}
+                    </span>
+                  </td>
+                  {a.cv.perFold.map((f) => (
+                    <td key={f.fold} className="px-3 py-1.5 text-right tabular-nums">{f.macroF1.toFixed(3)}</td>
+                  ))}
+                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
+                    {fmtMS(a.cv.meanMacroF1, a.cv.stdMacroF1)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
