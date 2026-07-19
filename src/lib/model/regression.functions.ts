@@ -477,11 +477,16 @@ export const trainHormoneRegression = createServerFn({ method: "POST" }).handler
     });
   }
 
-  return {
+  const payload: RegressionResult = {
     hormones: results,
     refreshedAt: new Date().toISOString(),
     notes: "Predictors exclude phase, hormones, and timestamps. Missing predictors are filled with the train-set median (learned on train only). Best model per hormone is selected by validation R² and cached in-worker so inference on new user rows uses the saved artifact.",
   };
+  try {
+    const { savePipelineRun } = await import("./pipeline-runs.functions");
+    await savePipelineRun("regression", payload);
+  } catch (e) { console.error("[regression] savePipelineRun failed", e); }
+  return payload;
 });
 
 // Inference API for callers with wearables-only rows (predictors keyed by feature name).
