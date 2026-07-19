@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
-import { EmptyData } from "@/components/hnhh/EmptyData";
+
 import { ANALYTE_LABEL } from "@/lib/clinical/reference-ranges";
 import type { AssayFlag, LabPanel } from "@/lib/clinical/types";
+import { UserLabsPanel } from "./UserLabsPanel";
 
 function FlagPill({ flag }: { flag: AssayFlag }) {
   const cls = flag === "H"
@@ -28,8 +29,10 @@ export function Laboratory() {
   if (!panels.length || !selected) {
     return (
       <>
-        <PageHeader eyebrow="Data · Endocrine" title="Laboratory results" description="N/A — no lab panels ingested." />
-        <EmptyData />
+        <PageHeader eyebrow="Data · Endocrine" title="Laboratory results" description="Log your own lab work or upload reports below." />
+        <div className="px-6 py-6 sm:px-8">
+          <UserLabsPanel />
+        </div>
       </>
     );
   }
@@ -124,6 +127,10 @@ export function Laboratory() {
             <p className="mt-3 text-[11px] text-muted-foreground">Reference ranges are phase-conditioned for LH/FSH/E₂/P₄ (adult premenopausal). Non-cyclic analytes use general adult female ranges. Values outside range are flagged L (low) or H (high) per standard clinical reporting convention.</p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="px-6 pb-2 sm:px-8">
+        <UserLabsPanel />
       </div>
     </div>
   );
