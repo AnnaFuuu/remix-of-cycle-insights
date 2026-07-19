@@ -1,7 +1,7 @@
 export interface PredictorInput {
   age: number;
   bmi: number | null;
-  cycleDay: number | null;
+  wristTempDelta: number | null;
   lh: number | null;
   estradiol: number | null;
   restingHR: number | null;

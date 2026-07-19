@@ -36,7 +36,7 @@ interface FieldSpec {
 const demographics: FieldSpec[] = [
   { key: "age", label: "predictor.age", unit: "years", placeholder: "e.g. 29", allowNA: false },
   { key: "bmi", label: "predictor.bmi", unit: "kg/m²", placeholder: "e.g. 22.4", step: "0.1", allowNA: true },
-  { key: "cycleDay", label: "predictor.cycleDay", unit: "1–35", placeholder: "e.g. 14", allowNA: true },
+  { key: "wristTempDelta", label: "predictor.wristTempDelta", unit: "°C vs baseline", placeholder: "e.g. +0.35", step: "0.01", allowNA: true },
 ];
 
 const endocrine: FieldSpec[] = [
@@ -57,7 +57,7 @@ const wearable: FieldSpec[] = [
 const EMPTY: PredictorInput = {
   age: 0,
   bmi: null,
-  cycleDay: null,
+  wristTempDelta: null,
   lh: null,
   estradiol: null,
   restingHR: null,
