@@ -5,6 +5,7 @@ import { StatCard } from "@/components/hnhh/StatCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
+import { EmptyData } from "@/components/hnhh/EmptyData";
 import { HeartPulse, Thermometer, Wind, Activity, Moon, Footprints } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend, AreaChart, Area } from "recharts";
 
@@ -12,6 +13,14 @@ export function Wearables() {
   const { ready } = useHormonalStore();
   const { wearables } = useClinical();
   if (!ready) return <PageSkeleton />;
+  if (!wearables.length) {
+    return (
+      <>
+        <PageHeader eyebrow="Data · Wearables" title="Wearable signals" description="N/A — no wearable telemetry ingested." />
+        <EmptyData />
+      </>
+    );
+  }
 
   const w = wearables.slice(-60);
   const last = w[w.length - 1];
