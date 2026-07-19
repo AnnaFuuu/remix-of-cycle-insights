@@ -358,7 +358,7 @@ export const runEnhancedBenchmark = createServerFn({ method: "POST" }).handler(a
     const Xc = mask.map((i) => pool.X[i]);
     const yc = new Int32Array(mask.length); for (let i = 0; i < mask.length; i++) yc[i] = pool.y[mask[i]];
     const cwc = classWeightFor(yc);
-    moeExperts[c] = fitSoftmaxGBRT(Xc, yc, { ...gbrtHp, nTrees: 60, classWeight: cwc });
+    moeExperts[c] = fitSoftmaxGBRT(Xc, yc, { ...gbrtHp, nTrees: 35, classWeight: cwc });
   }
 
   const testResults: Record<EnhancedMethod, { hard: Int32Array; probs: Float64Array[] }> = {} as Record<EnhancedMethod, { hard: Int32Array; probs: Float64Array[] }>;
