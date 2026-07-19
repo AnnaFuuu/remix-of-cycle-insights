@@ -10,7 +10,8 @@ export type PipelineStep =
   | "regression"
   | "classification";
 
-export interface PipelineRun<T = unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface PipelineRun<T = any> {
   step: PipelineStep;
   result: T;
   ranAt: string;
