@@ -99,6 +99,7 @@ export function Analytics() {
       <Preprocessing />
       <HormoneRegression />
       <PhaseClassification />
+      <EnhancedBenchmark />
 
       <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-3 sm:px-8">
         <CorrCard label="Sleep quality ↔ Mood" r={corrSleepMood} />
