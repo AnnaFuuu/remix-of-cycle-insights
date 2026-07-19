@@ -242,6 +242,10 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     softmax_gbrt: [], random_forest: [], logistic_regression: [],
   };
   const cvFitMs: Record<AlgoName, number> = { softmax_gbrt: 0, random_forest: 0, logistic_regression: 0 };
+  // Cache last-fold per-class + confusion so the UI can render a validation
+  // matrix without an extra refit.
+  const lastFoldEval: Record<AlgoName, { perClass: Record<PhaseKey, ClassMetrics>; confusion: number[][] }> =
+    {} as Record<AlgoName, { perClass: Record<PhaseKey, ClassMetrics>; confusion: number[][] }>;
 
   for (let fi = 0; fi < folds.length; fi++) {
     const valSet = new Set<number>(folds[fi]);
@@ -255,6 +259,7 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
       cvFitMs[algo] += fitMs;
       const mv = evalOn(model, vaFold.X, vaFold.y);
       cvPerAlgo[algo].push({ fold: fi + 1, accuracy: mv.accuracy, macroF1: mv.macroF1, logLoss: mv.logLoss });
+      if (fi === folds.length - 1) lastFoldEval[algo] = { perClass: mv.perClass, confusion: mv.confusion };
     }
   }
 
@@ -276,17 +281,7 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
     trainedByAlgo[algo] = model;
     const mt = evalOn(model, poolData.X, poolData.y);
     const me = evalOn(model, testData.X, testData.y);
-
-    // Use last-fold val metrics as the illustrative "val" per-class + confusion
-    // so the UI can still render a validation confusion matrix — the CV summary
-    // captures the aggregate statistical picture.
-    const lastFoldValSet = new Set<number>(folds[folds.length - 1]);
-    const lastFoldTrainSet = new Set<number>();
-    for (let fj = 0; fj < folds.length - 1; fj++) for (const pid of folds[fj]) lastFoldTrainSet.add(pid);
-    const meds = computeMedians(lastFoldTrainSet);
-    const vaFold = build(lastFoldValSet, meds);
-    const { model: valModel } = fitOne(algo, build(lastFoldTrainSet, meds).X, build(lastFoldTrainSet, meds).y);
-    const mv = evalOn(valModel, vaFold.X, vaFold.y);
+    const lf = lastFoldEval[algo];
 
     const totalFitMs = +(cvFitMs[algo] + refitMs).toFixed(0);
     algos.push({
@@ -295,8 +290,8 @@ export const trainPhaseClassification = createServerFn({ method: "POST" }).handl
       accuracy: { train: mt.accuracy, val: accStats.mean, test: me.accuracy },
       macroF1:  { train: mt.macroF1,  val: f1Stats.mean,  test: me.macroF1  },
       logLoss:  { train: mt.logLoss,  val: llStats.mean,  test: me.logLoss  },
-      perClass: { val: mv.perClass, test: me.perClass },
-      confusion: { val: mv.confusion, test: me.confusion },
+      perClass: { val: lf.perClass, test: me.perClass },
+      confusion: { val: lf.confusion, test: me.confusion },
       fitMs: totalFitMs,
       cv: {
         perFold,
