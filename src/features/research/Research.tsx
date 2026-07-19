@@ -162,10 +162,16 @@ export function Research() {
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle className="text-base">Endocrine baseline comparison</CardTitle>
-            <CardDescription>Latest biomarker read vs population normative range for phase <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span>.</CardDescription>
+            <CardDescription>
+              {latest ? (
+                <>Latest biomarker read vs population normative range for phase <span style={{ color: PHASE_ACCENT[latest.phase] }}>{latest.phase}</span>.</>
+              ) : (
+                <>N/A — no telemetry logged yet.</>
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {(["estrogen", "progesterone", "lh", "fsh"] as const).map((k) => {
+            {latest ? (["estrogen", "progesterone", "lh", "fsh"] as const).map((k) => {
               const range = BASELINE[k][latest.phase];
               const v = latest.biomarkers[k];
               const min = range[0], max = range[1];
@@ -187,7 +193,7 @@ export function Research() {
                   </div>
                 </div>
               );
-            })}
+            }) : <div className="text-xs text-muted-foreground">Log an entry to compare against baseline.</div>}
           </CardContent>
         </Card>
 
