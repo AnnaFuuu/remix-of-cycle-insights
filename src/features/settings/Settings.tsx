@@ -15,7 +15,7 @@ import { KeyRound, Lock } from "lucide-react";
 export function Settings() {
   const { ready, profile, setProfile, entries, resetSeed, clearAll } = useHormonalStore();
   const { isResearcher, unlock, lock } = useResearcherMode();
-  const [passphrase, setPassphrase] = React.useState("");
+  
   const [draft, setDraft] = React.useState(profile);
   React.useEffect(() => setDraft(profile), [profile]);
 
