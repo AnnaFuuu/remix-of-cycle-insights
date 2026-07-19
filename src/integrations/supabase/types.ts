@@ -1282,6 +1282,45 @@ export type Database = {
           },
         ]
       }
+      mcphases_trained_models: {
+        Row: {
+          algo: string
+          artifact: Json
+          classes: Json
+          id: string
+          kind: string
+          medians: Json
+          metrics: Json
+          n_train: number
+          predictors: Json
+          trained_at: string
+        }
+        Insert: {
+          algo: string
+          artifact: Json
+          classes: Json
+          id?: string
+          kind: string
+          medians: Json
+          metrics: Json
+          n_train: number
+          predictors: Json
+          trained_at?: string
+        }
+        Update: {
+          algo?: string
+          artifact?: Json
+          classes?: Json
+          id?: string
+          kind?: string
+          medians?: Json
+          metrics?: Json
+          n_train?: number
+          predictors?: Json
+          trained_at?: string
+        }
+        Relationships: []
+      }
       mcphases_wrist_temperature: {
         Row: {
           created_at: string
