@@ -23,7 +23,8 @@ const en: Dict = {
   "nav.xai": "Explainable AI",
   "nav.copilot": "Copilot",
   "nav.group.overview": "Overview",
-  "nav.group.data": "Data",
+  "nav.group.personalData": "Personal data",
+  "nav.group.modelTraining": "Model training",
   "nav.group.ai": "AI",
   "nav.group.research": "Research",
 
