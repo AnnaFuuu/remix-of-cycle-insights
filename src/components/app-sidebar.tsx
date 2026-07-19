@@ -23,12 +23,17 @@ const groups = [
     ],
   },
   {
-    label: "nav.group.data",
+    label: "nav.group.personalData",
     items: [
       { key: "nav.labs", url: "/labs", icon: TestTube },
       { key: "nav.wearables", url: "/wearables", icon: Watch },
       { key: "nav.biomarkers", url: "/biomarkers", icon: Dna },
       { key: "nav.telemetry", url: "/telemetry", icon: Activity },
+    ],
+  },
+  {
+    label: "nav.group.modelTraining",
+    items: [
       { key: "nav.quality", url: "/quality", icon: ShieldAlert },
       { key: "nav.analytics", url: "/analytics", icon: LineChart },
     ],
