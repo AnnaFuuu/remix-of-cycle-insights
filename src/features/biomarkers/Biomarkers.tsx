@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
 import { EmptyData } from "@/components/hnhh/EmptyData";
+import { UserEntriesPanel } from "@/components/hnhh/UserEntriesPanel";
 import { ANALYTE_LABEL, ANALYTE_ORDER, REF_UNITS, refRange } from "@/lib/clinical/reference-ranges";
 import type { LabAnalyte } from "@/lib/clinical/types";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceArea } from "recharts";
@@ -16,10 +17,10 @@ export function Biomarkers() {
   if (!ready) return <PageSkeleton />;
   if (!panels.length) {
     return (
-      <>
+      <div className="pb-10">
         <PageHeader eyebrow="Data · Biomarkers" title="Endocrine biomarkers" description="N/A — no biomarker panels ingested." />
-        <EmptyData />
-      </>
+        <div className="px-6 sm:px-8"><SymptomsPanel /></div>
+      </div>
     );
   }
 
@@ -95,6 +96,36 @@ export function Biomarkers() {
           })}
         </div>
       </div>
+
+      <div className="px-6 pt-6 sm:px-8">
+        <SymptomsPanel />
+      </div>
     </div>
+  );
+}
+
+function SymptomsPanel() {
+  return (
+    <UserEntriesPanel
+      storageKey="hnhh.userSymptoms.v1"
+      labels={{
+        cardTitle: "My self-report symptoms",
+        cardDescription: "Log how you feel by date or upload a symptom diary.",
+        addButton: "Add symptom entry",
+        uploadButton: "Upload file",
+        addDialogTitle: "Add self-report symptoms",
+        addDialogDescription: "Group all symptoms for one date together.",
+        uploadDialogTitle: "Upload symptom file",
+        uploadDialogDescription: "PDF, image, CSV, or document — up to 5 MB.",
+        itemLabel: "Symptom",
+        itemPlaceholder: "e.g. Cramps, Bloating, Mood",
+        resultLabel: "Severity / note",
+        resultPlaceholder: "e.g. Moderate, 3/5, dull pelvic",
+        addAnother: "Add another symptom",
+        emptyState: "N/A — no entries yet. Click Add symptom entry or Upload file to start.",
+        tableItemHeader: "Symptom",
+        tableResultHeader: "Severity / note",
+      }}
+    />
   );
 }

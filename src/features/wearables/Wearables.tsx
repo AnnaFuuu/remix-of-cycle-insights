@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useHormonalStore } from "@/lib/hormonal/store";
 import { useClinical } from "@/lib/clinical/use-clinical";
 import { EmptyData } from "@/components/hnhh/EmptyData";
+import { UserEntriesPanel } from "@/components/hnhh/UserEntriesPanel";
 import { HeartPulse, Thermometer, Wind, Activity, Moon, Footprints } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend, AreaChart, Area } from "recharts";
 
@@ -15,10 +16,10 @@ export function Wearables() {
   if (!ready) return <PageSkeleton />;
   if (!wearables.length) {
     return (
-      <>
+      <div className="pb-10">
         <PageHeader eyebrow="Data · Wearables" title="Wearable signals" description="N/A — no wearable telemetry ingested." />
-        <EmptyData />
-      </>
+        <div className="px-6 sm:px-8"><WearableEntriesPanel /></div>
+      </div>
     );
   }
 
@@ -152,6 +153,36 @@ export function Wearables() {
           <span><Moon className="mr-1 inline h-3 w-3" /> Sleep staging: PPG + actigraphy fusion</span>
         </div>
       </div>
+
+      <div className="px-6 pt-6 sm:px-8">
+        <WearableEntriesPanel />
+      </div>
     </div>
+  );
+}
+
+function WearableEntriesPanel() {
+  return (
+    <UserEntriesPanel
+      storageKey="hnhh.userWearables.v1"
+      labels={{
+        cardTitle: "My wearable signals entry",
+        cardDescription: "Log a wearable reading by date or upload an export from your device.",
+        addButton: "Add wearable entry",
+        uploadButton: "Upload file",
+        addDialogTitle: "Add wearable signal",
+        addDialogDescription: "Group all readings for one date together.",
+        uploadDialogTitle: "Upload wearable export",
+        uploadDialogDescription: "CSV, PDF, image, or document — up to 5 MB.",
+        itemLabel: "Signal",
+        itemPlaceholder: "e.g. Resting HR, HRV, Sleep score",
+        resultLabel: "Value",
+        resultPlaceholder: "e.g. 62 bpm",
+        addAnother: "Add another signal",
+        emptyState: "N/A — no entries yet. Click Add wearable entry or Upload file to start.",
+        tableItemHeader: "Signal",
+        tableResultHeader: "Value",
+      }}
+    />
   );
 }
