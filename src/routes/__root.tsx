@@ -93,6 +93,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Privacy-first hormonal health journaling with research-grade telemetry export." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Cycloscope — Hormonal Health Telemetry" },
+      { name: "twitter:description", content: "Privacy-first hormonal health journaling with research-grade telemetry export." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/36dfb9a3-0c2c-4cf8-8d26-7ef29d2a9371/id-preview-11ebfaad--a096cd4b-04b8-42d0-9226-e1e0db983224.lovable.app-1784461871212.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/36dfb9a3-0c2c-4cf8-8d26-7ef29d2a9371/id-preview-11ebfaad--a096cd4b-04b8-42d0-9226-e1e0db983224.lovable.app-1784461871212.png" },
     ],
     links: [
       {
