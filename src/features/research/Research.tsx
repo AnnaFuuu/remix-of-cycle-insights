@@ -21,6 +21,7 @@ import { generateNarrative } from "@/lib/agent/actions.functions";
 import { buildSnapshot } from "@/lib/agent/context";
 import type { HormonalPhase } from "@/lib/hormonal/types";
 import { DATASETS } from "@/lib/clinical/datasets";
+import { SleepDatasetsPanel } from "@/components/physionet/SleepDatasetsPanel";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -303,6 +304,10 @@ export function Research() {
             ))}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="px-6 sm:px-8">
+        <SleepDatasetsPanel variant="import" />
       </div>
     </div>
   );
