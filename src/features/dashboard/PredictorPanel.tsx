@@ -255,10 +255,11 @@ export function PredictorPanel() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
-            <Button onClick={onPredict} disabled={!ageValid}>
+            <Button onClick={onPredict} disabled={!ageValid || predicting}>
+              {predicting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("predictor.predict")}
             </Button>
-            <Button variant="ghost" onClick={onReset}>
+            <Button variant="ghost" onClick={onReset} disabled={predicting}>
               {t("predictor.reset")}
             </Button>
             {!ageValid && (
@@ -275,7 +276,65 @@ export function PredictorPanel() {
               <p className="mt-1 text-xs text-muted-foreground">
                 {lhOrE2Missing ? t("predictor.result.impute") : t("predictor.result.direct")}
               </p>
-              <p className="mt-2 text-xs text-muted-foreground">{t("predictor.result.pending")}</p>
+
+              {predicting && (
+                <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Running trained classifier…
+                </p>
+              )}
+
+              {predictError && !predicting && (
+                <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+                  {predictError.includes("No trained phase classifier")
+                    ? "No trained phase classifier yet. Open Model training → Analytics and run Step 5 (Phase classification) first."
+                    : predictError}
+                </div>
+              )}
+
+              {result && !predicting && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <div className="text-2xl font-semibold text-foreground">{result.phase}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {(result.confidence * 100).toFixed(1)}% confidence
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {Object.entries(result.probabilities).map(([phase, p]) => {
+                      const pct = p * 100;
+                      const isTop = phase === result.phase;
+                      return (
+                        <div
+                          key={phase}
+                          className={
+                            "rounded-md border p-2 " +
+                            (isTop ? "border-primary/50 bg-primary/5" : "border-border/50 bg-background")
+                          }
+                        >
+                          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{phase}</div>
+                          <div className="mt-0.5 text-sm font-medium text-foreground">{pct.toFixed(1)}%</div>
+                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                            <div
+                              className={isTop ? "h-full bg-primary" : "h-full bg-muted-foreground/40"}
+                              style={{ width: `${Math.max(2, pct)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {(result.imputed.lh !== undefined || result.imputed.estradiol !== undefined) && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Imputed from training-set medians:
+                      {result.imputed.lh !== undefined && ` LH ≈ ${result.imputed.lh}`}
+                      {result.imputed.lh !== undefined && result.imputed.estradiol !== undefined && ","}
+                      {result.imputed.estradiol !== undefined && ` Estrogen ≈ ${result.imputed.estradiol}`}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
                   {t("predictor.result.payload")}
