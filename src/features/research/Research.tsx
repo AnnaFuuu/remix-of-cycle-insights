@@ -273,6 +273,37 @@ export function Research() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="px-6 sm:px-8">
+        <Card className="border-border/60">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4 text-primary" /> Reference datasets & pretraining corpora</CardTitle>
+            <CardDescription>Provenance of the corpora used for CycloFM pretraining and downstream validation.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {DATASETS.map((d) => (
+              <div key={d.id} className="rounded-lg border bg-background p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold">{d.name}</div>
+                  {d.usedForPretraining && <Badge variant="outline" className="rounded-full text-[10px]">pretraining</Badge>}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1 font-mono text-[11px] text-muted-foreground">
+                  <span>n =</span><span className="text-right tabular-nums">{d.sampleSize.toLocaleString()}</span>
+                  <span>variables</span><span className="text-right tabular-nums">{d.variables.toLocaleString()}</span>
+                  <span>license</span><span className="text-right">{d.license.split(" ")[0]}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {d.modalities.map((m) => (
+                    <span key={m} className="rounded border px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">{m}</span>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{d.description}</p>
+                <p className="mt-2 text-[10px] italic text-muted-foreground">{d.citation}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
