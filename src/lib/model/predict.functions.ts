@@ -63,7 +63,7 @@ export const getPhaseModelInfo = createServerFn({ method: "GET" }).handler(async
     .eq("kind", "phase_classifier").maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const d = data as { algo: string; classes: string[]; predictors: string[]; metrics: unknown; n_train: number; trained_at: string };
+  const d = data as { algo: string; classes: string[]; predictors: string[]; metrics: PhaseModelMetrics; n_train: number; trained_at: string };
   return {
     algo: d.algo,
     classes: d.classes,
