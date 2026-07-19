@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WearablesRouteImport } from './routes/wearables'
 import { Route as TelemetryRouteImport } from './routes/telemetry'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -18,6 +19,11 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const WearablesRoute = WearablesRouteImport.update({
+  id: '/wearables',
+  path: '/wearables',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelemetryRoute = TelemetryRouteImport.update({
   id: '/telemetry',
   path: '/telemetry',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/telemetry': typeof TelemetryRoute
+  '/wearables': typeof WearablesRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
     | '/api/chat'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/telemetry'
+    | '/wearables'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
@@ -131,11 +143,19 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TelemetryRoute: typeof TelemetryRoute
+  WearablesRoute: typeof WearablesRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wearables': {
+      id: '/wearables'
+      path: '/wearables'
+      fullPath: '/wearables'
+      preLoaderRoute: typeof WearablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telemetry': {
       id: '/telemetry'
       path: '/telemetry'
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TelemetryRoute: TelemetryRoute,
+  WearablesRoute: WearablesRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
