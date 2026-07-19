@@ -1,6 +1,6 @@
 import * as React from "react";
 
-export type Locale = "en" | "zh";
+export type Locale = "en" | "zh" | "fr" | "it" | "de";
 
 type Dict = Record<string, string>;
 
@@ -133,7 +133,193 @@ const zh: Dict = {
   "copilot.prompt.4": "我现在处于哪个相位？该相位常见的表现是什么？",
 };
 
-const dicts: Record<Locale, Dict> = { en, zh };
+const fr: Dict = {
+  "app.tagline": "Cycloscope · télémétrie hormonale de niveau recherche",
+  "app.footer": "Infrastructure de recherche, pas un outil de diagnostic.",
+  "app.workspace": "Espace de travail",
+  "app.brand.sub": "Télémétrie hormonale",
+
+  "nav.dashboard": "Tableau de bord",
+  "nav.telemetry": "Journal de télémétrie",
+  "nav.analytics": "Analytique",
+  "nav.research": "Portail de recherche",
+  "nav.settings": "Paramètres",
+
+  "lang.label": "Langue",
+  "lang.en": "English",
+  "lang.zh": "中文",
+
+  "dash.eyebrow": "Tableau de bord",
+  "dash.title": "Aperçu physiologique",
+  "dash.desc": "Console de télémétrie sensible au cycle avec visualisation des tendances par phase.",
+  "dash.cycleDay": "Jour du cycle",
+  "dash.phase": "Phase",
+  "dash.bbt7": "TCB · moy. 7 j",
+  "dash.bbt.latest": "Dernier",
+  "dash.mood7": "Humeur · 7 j",
+  "dash.sleep7": "Qualité du sommeil · 7 j",
+  "dash.vsPrior": "vs semaine précédente",
+
+  "insights.title": "Insights proactifs du Copilot",
+  "insights.sub": "Générés à partir de vos données comparées à la référence.",
+  "insights.ask": "Demander au Copilot →",
+
+  "tel.eyebrow": "Télémétrie",
+  "tel.title": "Journal quotidien",
+  "tel.desc": "Capture structurée de l'état subjectif, des mesures objectives et des biomarqueurs.",
+  "tel.new": "Nouvelle entrée",
+  "tel.filter.phase": "Phase",
+  "tel.filter.symptoms": "Symptômes",
+
+  "nl.title": "Enregistrer en langage naturel",
+  "nl.placeholder": 'ex. « 6h de sommeil médiocre, fortes crampes 7/10, humeur 4, migraine »',
+  "nl.parse": "Analyser",
+  "nl.proposed": "Entrée proposée",
+  "nl.confidence": "confiance",
+  "nl.discard": "Ignorer",
+  "nl.approve": "Approuver et enregistrer",
+  "nl.parsed.ok": "Entrée créée depuis le langage naturel",
+  "nl.parsed.err": "Le Copilot n'a pas pu analyser cette entrée",
+
+  "copilot.title": "Copilot du cycle",
+  "copilot.sub": "Sensible au cycle · utilise des outils · données locales",
+  "copilot.new": "Nouvelle conversation",
+  "copilot.close": "Fermer",
+  "copilot.starters": "Essayez une amorce",
+  "copilot.thinking": "Réflexion…",
+  "copilot.placeholder": "Posez une question sur votre cycle, symptômes, corrélations…",
+  "copilot.disclaimer": "Pas un dispositif médical. Données locales sauf cette requête.",
+  "copilot.prompt.1": "Résume mes 14 derniers jours de télémétrie.",
+  "copilot.prompt.2": "Quelle est la corrélation entre mon humeur et mon sommeil ?",
+  "copilot.prompt.3": "Signale toute anomalie dans mes entrées récentes.",
+  "copilot.prompt.4": "Dans quelle phase suis-je et qu'est-ce qui est typique ?",
+};
+
+const it: Dict = {
+  "app.tagline": "Cycloscope · telemetria ormonale di livello scientifico",
+  "app.footer": "Infrastruttura di ricerca, non uno strumento diagnostico.",
+  "app.workspace": "Area di lavoro",
+  "app.brand.sub": "Telemetria ormonale",
+
+  "nav.dashboard": "Dashboard",
+  "nav.telemetry": "Registro telemetria",
+  "nav.analytics": "Analisi",
+  "nav.research": "Portale di ricerca",
+  "nav.settings": "Impostazioni",
+
+  "lang.label": "Lingua",
+  "lang.en": "English",
+  "lang.zh": "中文",
+
+  "dash.eyebrow": "Dashboard",
+  "dash.title": "Istantanea fisiologica",
+  "dash.desc": "Console di telemetria consapevole del ciclo con visualizzazione per fase.",
+  "dash.cycleDay": "Giorno del ciclo",
+  "dash.phase": "Fase",
+  "dash.bbt7": "TCB · media 7g",
+  "dash.bbt.latest": "Ultimo",
+  "dash.mood7": "Umore · 7g",
+  "dash.sleep7": "Qualità del sonno · 7g",
+  "dash.vsPrior": "vs settimana precedente",
+
+  "insights.title": "Insight proattivi del Copilot",
+  "insights.sub": "Generati dalla tua telemetria rispetto al baseline.",
+  "insights.ask": "Chiedi al Copilot →",
+
+  "tel.eyebrow": "Telemetria",
+  "tel.title": "Registro giornaliero",
+  "tel.desc": "Acquisizione strutturata di stato soggettivo, misure oggettive e biomarcatori.",
+  "tel.new": "Nuova voce",
+  "tel.filter.phase": "Fase",
+  "tel.filter.symptoms": "Sintomi",
+
+  "nl.title": "Registra in linguaggio naturale",
+  "nl.placeholder": 'es. "dormito 6h male, crampi forti 7/10, umore 4, mal di testa"',
+  "nl.parse": "Analizza",
+  "nl.proposed": "Voce proposta",
+  "nl.confidence": "confidenza",
+  "nl.discard": "Scarta",
+  "nl.approve": "Approva e salva",
+  "nl.parsed.ok": "Voce creata dal linguaggio naturale",
+  "nl.parsed.err": "Il Copilot non è riuscito ad analizzare",
+
+  "copilot.title": "Copilot del ciclo",
+  "copilot.sub": "Consapevole del ciclo · usa strumenti · dati locali",
+  "copilot.new": "Nuova conversazione",
+  "copilot.close": "Chiudi",
+  "copilot.starters": "Prova un suggerimento",
+  "copilot.thinking": "Sto pensando…",
+  "copilot.placeholder": "Chiedi del tuo ciclo, sintomi, correlazioni, baseline…",
+  "copilot.disclaimer": "Non è un dispositivo medico. I dati restano locali eccetto questa richiesta.",
+  "copilot.prompt.1": "Riassumi gli ultimi 14 giorni di telemetria.",
+  "copilot.prompt.2": "Come si correla il mio umore con la qualità del sonno?",
+  "copilot.prompt.3": "Segnala eventuali anomalie recenti.",
+  "copilot.prompt.4": "In che fase sono e cosa è tipico?",
+};
+
+const de: Dict = {
+  "app.tagline": "Cycloscope · hormonelle Telemetrie auf Forschungsniveau",
+  "app.footer": "Forschungsinfrastruktur, kein Diagnosewerkzeug.",
+  "app.workspace": "Arbeitsbereich",
+  "app.brand.sub": "Hormonelle Telemetrie",
+
+  "nav.dashboard": "Dashboard",
+  "nav.telemetry": "Telemetrie-Protokoll",
+  "nav.analytics": "Analytik",
+  "nav.research": "Forschungsportal",
+  "nav.settings": "Einstellungen",
+
+  "lang.label": "Sprache",
+  "lang.en": "English",
+  "lang.zh": "中文",
+
+  "dash.eyebrow": "Dashboard",
+  "dash.title": "Physiologische Momentaufnahme",
+  "dash.desc": "Zyklusbewusste Telemetrie-Konsole mit phasenschattierter Trendvisualisierung.",
+  "dash.cycleDay": "Zyklustag",
+  "dash.phase": "Phase",
+  "dash.bbt7": "BKT · 7-Tage-Ø",
+  "dash.bbt.latest": "Zuletzt",
+  "dash.mood7": "Stimmung · 7 Tage",
+  "dash.sleep7": "Schlafqualität · 7 Tage",
+  "dash.vsPrior": "vs. Vorwoche",
+
+  "insights.title": "Proaktive Copilot-Erkenntnisse",
+  "insights.sub": "Automatisch aus deiner Telemetrie vs. Referenzwerten.",
+  "insights.ask": "Copilot fragen →",
+
+  "tel.eyebrow": "Telemetrie",
+  "tel.title": "Tägliches Telemetrie-Protokoll",
+  "tel.desc": "Strukturierte Erfassung von Zustand, Messwerten und Biomarkern.",
+  "tel.new": "Neuer Eintrag",
+  "tel.filter.phase": "Phase",
+  "tel.filter.symptoms": "Symptome",
+
+  "nl.title": "In natürlicher Sprache protokollieren",
+  "nl.placeholder": 'z. B. "6h schlecht geschlafen, starke Krämpfe 7/10, Stimmung 4, Kopfschmerzen"',
+  "nl.parse": "Analysieren",
+  "nl.proposed": "Vorgeschlagener Eintrag",
+  "nl.confidence": "Konfidenz",
+  "nl.discard": "Verwerfen",
+  "nl.approve": "Bestätigen & speichern",
+  "nl.parsed.ok": "Eintrag aus natürlicher Sprache erstellt",
+  "nl.parsed.err": "Copilot konnte den Eintrag nicht analysieren",
+
+  "copilot.title": "Zyklus-Copilot",
+  "copilot.sub": "Zyklusbewusst · nutzt Tools · Daten lokal",
+  "copilot.new": "Neue Unterhaltung",
+  "copilot.close": "Schließen",
+  "copilot.starters": "Probiere einen Starter",
+  "copilot.thinking": "Denke nach…",
+  "copilot.placeholder": "Frag zu Zyklus, Symptomen, Korrelationen, Baselines…",
+  "copilot.disclaimer": "Kein Medizinprodukt. Daten bleiben lokal, außer bei dieser Anfrage.",
+  "copilot.prompt.1": "Fasse meine letzten 14 Tage Telemetrie zusammen.",
+  "copilot.prompt.2": "Wie korreliert meine Stimmung mit der Schlafqualität?",
+  "copilot.prompt.3": "Markiere Anomalien in meinen jüngsten Einträgen.",
+  "copilot.prompt.4": "In welcher Phase bin ich und was ist typisch?",
+};
+
+const dicts: Record<Locale, Dict> = { en, zh, fr, it, de };
 
 interface Ctx {
   locale: Locale;
@@ -150,8 +336,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-      if (saved === "en" || saved === "zh") setLocaleState(saved);
-      else if (typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("zh")) setLocaleState("zh");
+      if (saved === "en" || saved === "zh" || saved === "fr" || saved === "it" || saved === "de") setLocaleState(saved);
+      else if (typeof navigator !== "undefined") {
+        const nav = navigator.language.toLowerCase();
+        if (nav.startsWith("zh")) setLocaleState("zh");
+        else if (nav.startsWith("fr")) setLocaleState("fr");
+        else if (nav.startsWith("it")) setLocaleState("it");
+        else if (nav.startsWith("de")) setLocaleState("de");
+      }
     } catch { /* ignore */ }
   }, []);
 
