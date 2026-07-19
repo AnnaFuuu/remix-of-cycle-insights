@@ -1,67 +1,77 @@
 
-# Goal
+## 理解确认
 
-Turn Cycloscope into a real mcPHASES-trained research platform that predicts menstrual cycle phase from multi-modal daily signals. Ingest your `sleep_score.csv` now as the first real predictor, and scaffold every other mcPHASES table from the README as empty slots so you can drop each CSV in later without any schema work.
+你的需求我听懂了，总结一下：
 
-# Confirmed from your upload
+1. **前端**：Dashboard 加一个"Predictive Variables"输入面板，13 个字段。
+2. **N/A 规则**：除了 Age 必填，其余 12 个都可填 N/A。
+3. **两阶段预测逻辑**：
+   - 如果 LH 和 Estradiol 有值 → 直接分类 menstrual phase。
+   - 如果 LH 和/或 Estradiol 为 N/A → 先用其他变量跑回归模型 impute 出 LH / E2，再拼所有变量做 phase classification。
+4. 训练数据来自数据库里 mcPHASES 的专业测量值。
 
-`sleep_score.csv`, 5308 rows, columns exactly:
-`id, study_interval, is_weekend, day_in_study, timestamp, overall_score, composition_score, revitalization_score, duration_score, deep_sleep_in_minutes, resting_heart_rate, restlessness`.
-`study_interval` is stored as `2022` / `2024` (Interval 1 / Interval 2 per README) — I'll keep it as an integer year.
+---
 
-# Phase 1 — mcPHASES-native schema + sleep_score ingestion (this turn)
+## 本次交付范围（第一步：前端窗口）
 
-### Data model
+只做 UI 输入面板 + 本地状态，**不接模型**。模型训练/推理放在后续 step。
 
-Drop the existing `physionet_sleep_records` (only demo data). Add:
+### 变量清单与输入控件
 
-- **`mcphases_participants`** — `(participant_id int, first_seen_at, notes)`. Auto-upserted on ingest.
-- **`mcphases_sleep_score`** — mirrors your CSV 1:1: `participant_id, study_interval, day_in_study, timestamp_local, is_weekend, overall_score, composition_score, revitalization_score, duration_score, deep_sleep_in_minutes, resting_heart_rate, restlessness`. Unique key `(participant_id, study_interval, day_in_study)`.
-- **`mcphases_ingest_runs`** — audit row per upload: `table_name, filename, rows_inserted, rows_updated, rows_skipped, participants, errors jsonb, created_at`.
-- **Placeholder tables for every other mcPHASES CSV in the README** (created empty now so the UI, joins, and feature builder can reference them from day one):
-  `mcphases_active_minutes, mcphases_active_zone_minutes, mcphases_altitude, mcphases_calories, mcphases_computed_temperature, mcphases_demographic_vo2_max, mcphases_distance, mcphases_estimated_oxygen_variation, mcphases_exercise, mcphases_glucose, mcphases_heart_rate, mcphases_hrv_details, mcphases_height_weight, mcphases_hormones_selfreport, mcphases_respiratory_rate_summary, mcphases_resting_heart_rate, mcphases_sleep, mcphases_steps, mcphases_stress_score, mcphases_subject_info, mcphases_time_in_hr_zones, mcphases_wrist_temperature`.
-  Each has the exact columns from the README, correct key (day-keyed vs window-keyed vs participant-keyed), unique constraint, and `raw jsonb` fallback for anything unexpected.
+| # | Variable | Unit | Control | N/A |
+|---|---|---|---|---|
+| 1 | Age | years | number | ❌ 必填 |
+| 2 | BMI | kg/m² | number | ✅ |
+| 3 | Cycle day | 1–35 | number | ✅ |
+| 4 | LH | mIU/mL | number | ✅ (触发 impute) |
+| 5 | Estradiol | pg/mL | number | ✅ (触发 impute) |
+| 6 | Resting HR | bpm | number | ✅ |
+| 7 | HRV (RMSSD) | ms | number | ✅ |
+| 8 | Wrist temperature Δ | °C | number | ✅ |
+| 9 | Respiratory rate | breaths/min | number | ✅ |
+| 10 | Sleep score | 0–100 | number | ✅ |
+| 11 | Sleep duration | hours | number | ✅ |
+| 12 | Stress score | 0–100 | number | ✅ |
+| 13 | Activity level | sedentary / light / moderate / vigorous | select | ✅ |
 
-RLS: public `SELECT` on every table (this is research showcase data), writes only via server functions using service role. GRANTs in the same migration.
+每个数值输入右侧带一个 "N/A" 复选框；勾上就 disable 输入框并把值置为 `null`。
 
-### Importer (generic, registry-driven)
+### 文件改动
 
-- **`src/lib/mcphases/registry.ts`** — one entry per mcPHASES CSV declaring: target table, key columns, column mapping, type coercions, key style (day / window / participant). Every table from the README gets an entry now; `sleep_score` is fully active, the others are marked `status: "scaffold"` (schema exists, importer accepts them, UI shows them as slots).
-- **`src/lib/mcphases/ingest.functions.ts`** — one server function `ingestMcphasesCsv({ table, csvText, filename })`: parses with papaparse, coerces via the registry, upserts participants + rows in 1000-row batches, writes an `mcphases_ingest_runs` row, returns `{ inserted, updated, skipped, participants, errors, stats }`.
-- **`src/lib/mcphases/summary.functions.ts`** — `getMcphasesOverview()` returns per-table row counts, participant counts, day-range coverage, is-populated flag. Drives the Data Quality grid.
+- **新增** `src/features/dashboard/PredictorPanel.tsx`
+  - 卡片标题："Predictive variables"，副标题说明规则（LH/E₂ 缺失会走 imputation → phase classification 两步）。
+  - 3 列 grid（响应式 → mobile 1 列）分成三组视觉分区：
+    - Demographics: Age, BMI, Cycle day
+    - Endocrine (clinical): LH, Estradiol — 用浅底色标注 "clinical assay, optional"
+    - Wearable + subjective: RHR, HRV, Wrist temp Δ, Resp rate, Sleep score, Sleep duration, Stress score, Activity level
+  - 底部两个按钮：`Predict phase`（disabled 直到 Age 有值）+ `Reset`。
+  - 结果区域先放占位卡片："Model not yet wired — inputs captured. Two-stage pipeline (impute → classify) will run here."
+  - 显示当前 payload JSON preview（折叠 `<details>`），方便你确认输入是否正确。
 
-### UI
+- **新增** `src/lib/prediction/types.ts`
+  - `PredictorInput` interface（13 字段，可空的用 `number | null`）。
+  - `ActivityLevel` union。
+  - `PredictionResult` 占位 interface（`phase`, `confidence`, `probabilities`, `imputed: { lh?, estradiol? }`）。
 
-- **Research Portal** — replace the current sleep panel with an **mcPHASES Importer** card: table dropdown (defaults to `sleep_score`, all 22 tables listed with "scaffolded / active" state), file drop, preview of first 5 rows + detected mapping, confirm, progress, per-run summary. Below it: an **Ingest history** table reading `mcphases_ingest_runs`.
-- **Data Quality** — new grid: one card per mcPHASES table showing rows, participants, day coverage, and completeness. Sleep score card is populated after your upload; the others show "Awaiting upload" with a link to the importer.
-- **Foundation Model** and **XAI** pages — add a banner "Model training uses real mcPHASES tables — currently 1 of 22 active (sleep_score). Upload more to enrich features." No behavior change to the mock output yet; the real model lands in phase 2.
+- **修改** `src/features/dashboard/Dashboard.tsx`
+  - 在 `PageHeader` 下方、`ProactiveInsights` 上方插入 `<PredictorPanel />`。
+  - 其他部分不动。
 
-# Phase 2 — Real cycle-phase model (after your next CSV upload, likely `hormones_and_selfreport.csv`)
+- **修改** `src/lib/i18n.tsx`
+  - 新增 `predictor.*` key（面板标题、13 个变量 label、N/A、Predict、Reset、说明文案），五种语言全补。
 
-That file carries the `phase` label; without it we can't supervise training. Once it's in:
+### 不做的事
 
-- **Feature builder** joins active mcPHASES tables on `(participant_id, day_in_study)`, builds rolling 3/7-day windows, handles windowed tables via day expansion.
-- **Trainer** (server function, pure-JS, Worker-safe): logistic regression + gradient-boosted trees predicting `phase ∈ {menstrual, follicular, ovulation, luteal}`; subject-stratified split; persists coefficients + metrics to `mcphases_model_runs`.
-- **Foundation Model page** shows real AUROC / F1 / confusion matrix / per-day predictions with confidence.
-- **XAI page** shows real per-prediction feature attributions (LR contribution decomposition).
+- 不训练模型、不调用后端、不改数据库。
+- 不动 Foundation Model / XAI 页面（那两页现有的 mock 保留，之后 step 会替换）。
+- 不做输入校验的复杂 UX（超出合理范围只给 hint，不阻止提交）。
 
-We do phase 2 only after phase 1 is verified against your first real upload.
+---
 
-# Assumptions (say if any is wrong)
+## 后续 step 预告（不在本次交付）
 
-1. Reset the DB — drop `physionet_sleep_records`. Nothing there but demo rows.
-2. All mcPHASES data is public read in the app.
-3. `study_interval` stored as integer year (`2022` / `2024`) matching your CSV.
-4. `restlessness` stored as `numeric` (already in 0–1 range in your file).
-5. Model training stays server-side in pure JS (no Python). Fine for hackathon scale.
+- **Step 2**：服务端 `train.functions.ts`，用 mcPHASES 数据训练 (a) LH 回归、(b) E₂ 回归、(c) phase 多分类。产物存 JSON 系数。
+- **Step 3**：`predict.functions.ts` 接 PredictorPanel，实现两阶段推理，返回 imputed 值 + phase 概率。
+- **Step 4**：PredictorPanel 结果区替换成真实预测卡（phase badge、置信度、imputed hormone 值高亮）。
 
-# Technical section
-
-- **Migration**: drop `physionet_sleep_records`; create `mcphases_participants`, `mcphases_ingest_runs`, and all 22 `mcphases_*` tables with GRANT + RLS (public SELECT, service_role ALL) + `updated_at` triggers where applicable. Single migration.
-- **New files**: `src/lib/mcphases/{types.ts, registry.ts, ingest.functions.ts, summary.functions.ts}`, `src/components/mcphases/{McphasesImportPanel.tsx, IngestRunsTable.tsx, TableCoverageGrid.tsx}`.
-- **Removed**: `src/lib/physionet/*`, `src/components/physionet/SleepDatasetsPanel.tsx`.
-- **Wired**: Research Portal uses `McphasesImportPanel` + `IngestRunsTable`; Data Quality uses `TableCoverageGrid`; Foundation Model & XAI get the "1/22 active" banner.
-- **i18n**: new keys for importer + coverage grid in en/zh/fr/it/de.
-- **Deps**: `papaparse` already installed. No new deps in phase 1.
-
-Approve and I'll build phase 1 and ingest your `sleep_score.csv` end-to-end so you can see real rows in the Data Quality grid immediately.
+第一步 OK 的话回复 "go"，我就实现 PredictorPanel。

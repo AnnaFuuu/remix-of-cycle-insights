@@ -3,6 +3,7 @@ import { useHormonalStore } from "@/lib/hormonal/store";
 import { PageHeader } from "@/components/hnhh/PageHeader";
 import { ProactiveInsights } from "@/components/agent/ProactiveInsights";
 import { LongitudinalPanel } from "./LongitudinalPanel";
+import { PredictorPanel } from "./PredictorPanel";
 import { useI18n } from "@/lib/i18n";
 import { PageSkeleton } from "@/components/hnhh/PageSkeleton";
 import { StatCard } from "@/components/hnhh/StatCard";
@@ -106,6 +107,7 @@ export function Dashboard() {
         actions={<PhaseBadge phase={latest.phase} />}
       />
       <ProactiveInsights />
+      <PredictorPanel />
       <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
         <StatCard
           label={t("dash.cycleDay")}
