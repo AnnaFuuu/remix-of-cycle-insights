@@ -147,7 +147,7 @@ export function Settings() {
             <CardDescription>
               {isResearcher
                 ? "Model training pages are visible in the sidebar. Lock again to hide them."
-                : "The Model training section (Data for training models · Analytics) is hidden by default. Enter the team passphrase to unlock it on this device."}
+                : "The Model training section (Data for training models · Analytics) is hidden by default. Click below to unlock it on this device."}
             </CardDescription>
           </CardHeader>
           <CardContent>
