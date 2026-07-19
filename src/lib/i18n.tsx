@@ -18,7 +18,7 @@ const en: Dict = {
   "nav.labs": "Laboratory",
   "nav.wearables": "Wearable Signals",
   "nav.biomarkers": "Biomarkers",
-  "nav.quality": "Data Quality",
+  "nav.quality": "Data for training models",
   "nav.model": "Foundation Model",
   "nav.xai": "Explainable AI",
   "nav.copilot": "Copilot",
@@ -135,6 +135,7 @@ const zh: Dict = {
   "nav.analytics": "数据分析",
   "nav.research": "研究门户",
   "nav.settings": "设置",
+  "nav.quality": "用于训练模型的数据",
 
   "lang.label": "语言",
   "lang.en": "English",
@@ -239,6 +240,7 @@ const fr: Dict = {
   "nav.analytics": "Analytique",
   "nav.research": "Portail de recherche",
   "nav.settings": "Paramètres",
+  "nav.quality": "Données pour entraîner les modèles",
 
   "lang.label": "Langue",
   "lang.en": "English",
@@ -343,6 +345,7 @@ const it: Dict = {
   "nav.analytics": "Analisi",
   "nav.research": "Portale di ricerca",
   "nav.settings": "Impostazioni",
+  "nav.quality": "Dati per l'addestramento dei modelli",
 
   "lang.label": "Lingua",
   "lang.en": "English",
@@ -447,6 +450,7 @@ const de: Dict = {
   "nav.analytics": "Analytik",
   "nav.research": "Forschungsportal",
   "nav.settings": "Einstellungen",
+  "nav.quality": "Daten zum Trainieren von Modellen",
 
   "lang.label": "Sprache",
   "lang.en": "English",
