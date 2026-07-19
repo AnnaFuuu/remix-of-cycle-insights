@@ -110,7 +110,7 @@ export const ingestMcphasesCsv = createServerFn({ method: "POST" })
     const dayValues = good
       .map((r) => (typeof r.day_in_study === "number" ? r.day_in_study : null))
       .filter((v): v is number => v !== null);
-    const stats: Record<string, unknown> = {
+    const stats: { participants: number; day_min: number | null; day_max: number | null } = {
       participants: participants.size,
       day_min: dayValues.length ? Math.min(...dayValues) : null,
       day_max: dayValues.length ? Math.max(...dayValues) : null,
