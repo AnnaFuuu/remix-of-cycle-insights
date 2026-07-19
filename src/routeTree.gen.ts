@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResearchRouteImport } from './routes/research'
 import { Route as QualityRouteImport } from './routes/quality'
+import { Route as ModelRouteImport } from './routes/model'
 import { Route as LabsRouteImport } from './routes/labs'
 import { Route as BiomarkersRouteImport } from './routes/biomarkers'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
@@ -51,6 +52,11 @@ const QualityRoute = QualityRouteImport.update({
   path: '/quality',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModelRoute = ModelRouteImport.update({
+  id: '/model',
+  path: '/model',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LabsRoute = LabsRouteImport.update({
   id: '/labs',
   path: '/labs',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/biomarkers': typeof BiomarkersRoute
   '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
   '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/biomarkers': typeof BiomarkersRoute
   '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
   '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/biomarkers': typeof BiomarkersRoute
   '/labs': typeof LabsRoute
+  '/model': typeof ModelRoute
   '/quality': typeof QualityRoute
   '/research': typeof ResearchRoute
   '/settings': typeof SettingsRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/biomarkers'
     | '/labs'
+    | '/model'
     | '/quality'
     | '/research'
     | '/settings'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/biomarkers'
     | '/labs'
+    | '/model'
     | '/quality'
     | '/research'
     | '/settings'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/biomarkers'
     | '/labs'
+    | '/model'
     | '/quality'
     | '/research'
     | '/settings'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   BiomarkersRoute: typeof BiomarkersRoute
   LabsRoute: typeof LabsRoute
+  ModelRoute: typeof ModelRoute
   QualityRoute: typeof QualityRoute
   ResearchRoute: typeof ResearchRoute
   SettingsRoute: typeof SettingsRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QualityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/model': {
+      id: '/model'
+      path: '/model'
+      fullPath: '/model'
+      preLoaderRoute: typeof ModelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/labs': {
       id: '/labs'
       path: '/labs'
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   BiomarkersRoute: BiomarkersRoute,
   LabsRoute: LabsRoute,
+  ModelRoute: ModelRoute,
   QualityRoute: QualityRoute,
   ResearchRoute: ResearchRoute,
   SettingsRoute: SettingsRoute,
