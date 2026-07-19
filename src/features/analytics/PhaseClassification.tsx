@@ -150,7 +150,7 @@ function Results({ data }: { data: ClassificationResult }) {
                     <td className="px-3 py-1.5 text-[10px] text-muted-foreground">{fmtHp(a.hyperparams)}</td>
                     <td className="px-3 py-1.5 text-right text-muted-foreground"><Timer className="mr-0.5 inline h-3 w-3" />{a.fitMs} ms</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.train, a.macroF1.train, a.logLoss.train)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{fmtCV(a.cv)}</td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">{a.cv ? fmtCV(a.cv) : "—"}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmtTrip(a.accuracy.test, a.macroF1.test, a.logLoss.test)}</td>
                   </tr>
                 );
