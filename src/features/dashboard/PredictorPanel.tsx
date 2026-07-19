@@ -128,6 +128,14 @@ export function PredictorPanel() {
     try {
       const r = await runPredict({ data: payload });
       setResult(r);
+      try {
+        const { appendLocalPrediction } = await import("@/lib/predictions/prediction-history.functions");
+        appendLocalPrediction({
+          predicted_at: new Date().toISOString(),
+          inputs: payload as unknown as Record<string, number | null | string>,
+          result: r,
+        });
+      } catch { /* history is best-effort */ }
     } catch (e) {
       setPredictError(e instanceof Error ? e.message : String(e));
     } finally {
