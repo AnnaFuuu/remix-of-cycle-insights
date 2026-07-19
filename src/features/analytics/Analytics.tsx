@@ -15,6 +15,7 @@ import { FeatureEngineering } from "./FeatureEngineering";
 import { Preprocessing } from "./Preprocessing";
 import { HormoneRegression } from "./HormoneRegression";
 import { PhaseClassification } from "./PhaseClassification";
+import { EnhancedBenchmark } from "./EnhancedBenchmark";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
