@@ -1409,7 +1409,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      refresh_mcphases_daily_features: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
