@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { HormonalStoreProvider } from "@/lib/hormonal/store";
+import { ResearcherModeProvider } from "@/lib/researcher-mode";
 import { Toaster } from "@/components/ui/sonner";
 import { CopilotProvider } from "@/components/agent/CopilotProvider";
 import { CopilotDrawer } from "@/components/agent/CopilotDrawer";
@@ -128,18 +129,20 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <HormonalStoreProvider>
         <I18nProvider>
-          <CopilotProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <AppHeader />
-                <main className="min-h-[calc(100vh-3.5rem)]">
-                  <Outlet />
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
-            <CopilotDrawer />
-          </CopilotProvider>
+          <ResearcherModeProvider>
+            <CopilotProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <AppHeader />
+                  <main className="min-h-[calc(100vh-3.5rem)]">
+                    <Outlet />
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+              <CopilotDrawer />
+            </CopilotProvider>
+          </ResearcherModeProvider>
         </I18nProvider>
         <Toaster />
       </HormonalStoreProvider>
