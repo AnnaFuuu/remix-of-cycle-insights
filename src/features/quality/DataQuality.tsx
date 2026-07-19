@@ -137,6 +137,29 @@ export function DataQuality() {
       <div className="px-6 sm:px-8">
         <TableCoverageGrid />
       </div>
+
+      <div className="px-6 pt-6 sm:px-8">
+        <Card className="border-border/60">
+          <CardHeader>
+            <CardTitle className="text-sm">References</CardTitle>
+            <CardDescription>Source dataset citation.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-secondary/40 p-4 font-mono text-[11px] leading-relaxed text-foreground">
+{`@article{PhysioNet-mcphases-1.0.0,
+  author  = {Lin, Blue and Li, Jin Yi and Kalani, Kaavya and Truong, Khai and Mariakakis, Alex},
+  title   = {{mcPHASES: A Dataset of Physiological, Hormonal, and Self-reported Events and Symptoms for Menstrual Health Tracking with Wearables}},
+  journal = {{PhysioNet}},
+  year    = {2025},
+  month   = sep,
+  note    = {Version 1.0.0},
+  doi     = {10.13026/zx6a-2c81},
+  url     = {https://doi.org/10.13026/zx6a-2c81}
+}`}
+            </pre>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
