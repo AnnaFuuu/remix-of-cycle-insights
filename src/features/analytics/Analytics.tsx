@@ -14,6 +14,7 @@ import { TrainValTestSplit } from "./TrainValTestSplit";
 import { FeatureEngineering } from "./FeatureEngineering";
 import { Preprocessing } from "./Preprocessing";
 import { HormoneRegression } from "./HormoneRegression";
+import { PhaseClassification } from "./PhaseClassification";
 
 const PHASES: HormonalPhase[] = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
 
@@ -23,11 +24,12 @@ export function Analytics() {
   if (!entries.length) {
     return (
       <>
-        <PageHeader eyebrow="Model training" title="Analytics · training pipeline" description="Step 1 stratifies participants into train / val / test (70/15/15, no leakage). Step 2 aggregates raw wearable streams into one row per participant per study day. Step 3 fits a KNN imputer on train. Step 4 trains hormone regression models to estimate LH & estrogen from wearables." />
+        <PageHeader eyebrow="Model training" title="Analytics · training pipeline" description="Step 1 stratifies participants into train / val / test (60/20/20, no leakage). Step 2 aggregates raw wearable streams into one row per participant per study day. Step 3 fits a KNN imputer on train. Step 4 trains hormone regression models to estimate LH & estrogen from wearables. Step 5 trains a multi-class phase classifier (softmax GBRT vs Random Forest vs multinomial logistic regression) on all non-hormone-only predictors and reports macro-F1 + confusion matrix on held-out participants." />
         <TrainValTestSplit />
         <FeatureEngineering />
         <Preprocessing />
         <HormoneRegression />
+        <PhaseClassification />
         <EmptyData />
       </>
     );
@@ -94,6 +96,7 @@ export function Analytics() {
       <FeatureEngineering />
       <Preprocessing />
       <HormoneRegression />
+      <PhaseClassification />
 
       <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-3 sm:px-8">
         <CorrCard label="Sleep quality ↔ Mood" r={corrSleepMood} />
