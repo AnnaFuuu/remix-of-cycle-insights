@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import type { PredictorInput } from "@/lib/prediction/types";
 import { FlaskConical, Activity, User, Sparkles } from "lucide-react";
 
-type NumericKey = Exclude<keyof PredictorInput, "activityLevel">;
+type NumericKey = keyof PredictorInput;
 
 interface FieldSpec {
   key: NumericKey;
@@ -53,7 +53,6 @@ const EMPTY: PredictorInput = {
   sleepScore: null,
   sleepDuration: null,
   stressScore: null,
-  activityLevel: null,
   glucose: null,
 };
 
@@ -88,7 +87,6 @@ export function PredictorPanel() {
         num !== null && Number.isNaN(num) ? null : num;
     }
     out.age = Number(fields.age.value);
-    out.activityLevel = null;
     return out;
   };
 
