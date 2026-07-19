@@ -443,7 +443,7 @@ export const runEnhancedBenchmark = createServerFn({ method: "POST" }).handler(a
   try {
     const { savePipelineRun } = await import("./pipeline-runs.functions");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await savePipelineRun("enhanced_benchmark" as any, payload);
+    await savePipelineRun("enhanced_benchmark", payload);
   } catch (e) { console.error("[enhanced-benchmark] savePipelineRun failed", e); }
   return payload;
 });
