@@ -41,12 +41,17 @@ function toFeatureValue(uiKey: string, raw: number | null): number | null {
   return raw;
 }
 
+export interface PhaseModelMetrics {
+  accuracy: { train: number; val: number; test: number };
+  macroF1:  { train: number; val: number; test: number };
+  logLoss:  { train: number; val: number; test: number };
+}
 export interface PhaseModelInfo {
   algo: string;
   classes: string[];
   nPredictors: number;
   nTrain: number;
-  metrics: Record<string, unknown> | null;
+  metrics: PhaseModelMetrics;
   trainedAt: string;
 }
 
