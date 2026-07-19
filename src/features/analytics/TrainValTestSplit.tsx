@@ -54,7 +54,7 @@ export function TrainValTestSplit() {
           <div>
             <CardTitle className="text-base">Step 1 · Train / Validation / Test split</CardTitle>
             <CardDescription>
-              Participant-level stratified split (60 / 20 / 20). Same subject never appears in more than one set — prevents day-level leakage. Stratified by dominant menstrual phase so phase proportions stay balanced across splits.
+              Participant-level stratified split (70 / 15 / 15). Same subject never appears in more than one set — prevents day-level leakage. Stratified by dominant menstrual phase so phase proportions stay balanced across splits.
             </CardDescription>
           </div>
           <div className="flex items-end gap-2">
