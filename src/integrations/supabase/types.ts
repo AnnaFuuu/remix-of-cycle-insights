@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      lab_reports: {
+        Row: {
+          ai_model: string | null
+          created_at: string
+          extracted: Json
+          id: string
+          notes: string | null
+          owner_id: string
+          pii_ciphertext: string | null
+          report_date: string
+          source_filename: string
+          source_mime: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          ai_model?: string | null
+          created_at?: string
+          extracted?: Json
+          id?: string
+          notes?: string | null
+          owner_id: string
+          pii_ciphertext?: string | null
+          report_date: string
+          source_filename: string
+          source_mime: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          ai_model?: string | null
+          created_at?: string
+          extracted?: Json
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          pii_ciphertext?: string | null
+          report_date?: string
+          source_filename?: string
+          source_mime?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mcphases_active_minutes: {
         Row: {
           created_at: string
@@ -1383,6 +1428,62 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "mcphases_participants"
             referencedColumns: ["participant_id"]
+          },
+        ]
+      }
+      prediction_history: {
+        Row: {
+          actual_estradiol: number | null
+          actual_lh: number | null
+          confidence: number
+          created_at: string
+          id: string
+          imputed: Json
+          inputs: Json
+          matched_lab_report_id: string | null
+          notes: string | null
+          owner_id: string
+          phase: string
+          predicted_at: string
+          probabilities: Json
+        }
+        Insert: {
+          actual_estradiol?: number | null
+          actual_lh?: number | null
+          confidence: number
+          created_at?: string
+          id?: string
+          imputed?: Json
+          inputs: Json
+          matched_lab_report_id?: string | null
+          notes?: string | null
+          owner_id: string
+          phase: string
+          predicted_at?: string
+          probabilities: Json
+        }
+        Update: {
+          actual_estradiol?: number | null
+          actual_lh?: number | null
+          confidence?: number
+          created_at?: string
+          id?: string
+          imputed?: Json
+          inputs?: Json
+          matched_lab_report_id?: string | null
+          notes?: string | null
+          owner_id?: string
+          phase?: string
+          predicted_at?: string
+          probabilities?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_history_matched_lab_report_id_fkey"
+            columns: ["matched_lab_report_id"]
+            isOneToOne: false
+            referencedRelation: "lab_reports"
+            referencedColumns: ["id"]
           },
         ]
       }
