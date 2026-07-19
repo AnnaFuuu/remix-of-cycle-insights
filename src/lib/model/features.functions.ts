@@ -58,7 +58,7 @@ export const FEATURE_DEFS: FeatureDef[] = [
   { key: "glucose_std",        label: "Glucose std",                  group: "Glucose",       source: "glucose",                   description: "Daily standard deviation (variability)." },
   { key: "glucose_range",      label: "Glucose range",                group: "Glucose",       source: "glucose",                   description: "max - min for the day." },
   { key: "glucose_samples",    label: "Glucose samples",              group: "Glucose",       source: "glucose",                   description: "Number of CGM readings that day." },
-  { key: "wrist_temp_overnight_mean", label: "Wrist temp overnight (Δ°C)",     group: "Wearables",     source: "wrist_temperature",         description: "Overnight (00:00-06:00) mean wrist temperature deviation from participant baseline." },
+  { key: "wrist_temp_overnight_mean", label: "Wrist temp overnight (Δ°C)",     group: "Wrist temp",    source: "wrist_temperature",         description: "Overnight (00:00-06:00) mean wrist temperature deviation from participant baseline." },
   { key: "cramps",             label: "Cramps",                       group: "Self-report",   source: "hormones_selfreport",       description: "Ordinal 0-5 self-report." },
   { key: "bloating",           label: "Bloating",                     group: "Self-report",   source: "hormones_selfreport",       description: "Ordinal 0-5 self-report." },
   { key: "fatigue",            label: "Fatigue",                      group: "Self-report",   source: "hormones_selfreport",       description: "Ordinal 0-5 self-report." },
