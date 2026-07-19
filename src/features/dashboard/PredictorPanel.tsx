@@ -92,6 +92,10 @@ export function PredictorPanel() {
     bloating: "",
   });
   const [submitted, setSubmitted] = React.useState<PredictorInput | null>(null);
+  const [result, setResult] = React.useState<PredictionResult | null>(null);
+  const [predicting, setPredicting] = React.useState(false);
+  const [predictError, setPredictError] = React.useState<string | null>(null);
+  const runPredict = useServerFn(predictPhase);
 
   const setValue = (k: NumericKey, v: string) =>
     setFields((prev) => ({ ...prev, [k]: { ...prev[k], value: v } }));
@@ -116,15 +120,29 @@ export function PredictorPanel() {
     return out;
   };
 
-  const onPredict = () => {
+  const onPredict = async () => {
     if (!ageValid) return;
-    setSubmitted(buildPayload());
+    const payload = buildPayload();
+    setSubmitted(payload);
+    setResult(null);
+    setPredictError(null);
+    setPredicting(true);
+    try {
+      const r = await runPredict({ data: payload });
+      setResult(r);
+    } catch (e) {
+      setPredictError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setPredicting(false);
+    }
   };
 
   const onReset = () => {
     setFields(initialState());
     setSymptoms({ cramps: "", bloating: "" });
     setSubmitted(null);
+    setResult(null);
+    setPredictError(null);
   };
 
   const lhOrE2Missing =
