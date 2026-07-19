@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
-import type { ActivityLevel, PredictorInput } from "@/lib/prediction/types";
+import type { PredictorInput } from "@/lib/prediction/types";
 import { FlaskConical, Activity, User, Sparkles } from "lucide-react";
 
 type NumericKey = Exclude<keyof PredictorInput, "activityLevel">;
@@ -42,13 +41,6 @@ const wearable: FieldSpec[] = [
   { key: "glucose", label: "predictor.glucose", unit: "mmol/L", placeholder: "e.g. 5.4", step: "0.1", allowNA: true },
 ];
 
-const activityOptions: { value: ActivityLevel; label: string }[] = [
-  { value: "sedentary", label: "predictor.activity.sedentary" },
-  { value: "light", label: "predictor.activity.light" },
-  { value: "moderate", label: "predictor.activity.moderate" },
-  { value: "vigorous", label: "predictor.activity.vigorous" },
-];
-
 const EMPTY: PredictorInput = {
   age: 0,
   bmi: null,
@@ -57,7 +49,6 @@ const EMPTY: PredictorInput = {
   estradiol: null,
   restingHR: null,
   hrv: null,
-  wristTempDelta: null,
   respiratoryRate: null,
   sleepScore: null,
   sleepDuration: null,
@@ -79,7 +70,6 @@ function initialState(): Record<NumericKey, FieldState> {
 export function PredictorPanel() {
   const { t } = useI18n();
   const [fields, setFields] = React.useState<Record<NumericKey, FieldState>>(() => initialState());
-  const [activity, setActivity] = React.useState<ActivityLevel | "na" | "">("");
   const [submitted, setSubmitted] = React.useState<PredictorInput | null>(null);
 
   const setValue = (k: NumericKey, v: string) =>
@@ -98,7 +88,7 @@ export function PredictorPanel() {
         num !== null && Number.isNaN(num) ? null : num;
     }
     out.age = Number(fields.age.value);
-    out.activityLevel = activity === "" || activity === "na" ? null : activity;
+    out.activityLevel = null;
     return out;
   };
 
@@ -109,7 +99,6 @@ export function PredictorPanel() {
 
   const onReset = () => {
     setFields(initialState());
-    setActivity("");
     setSubmitted(null);
   };
 
@@ -164,38 +153,7 @@ export function PredictorPanel() {
             setValue={setValue}
             setNA={setNA}
             t={t}
-          >
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">
-                {t("predictor.activity")}
-              </Label>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={activity === "na" ? "" : activity}
-                  onValueChange={(v) => setActivity(v as ActivityLevel)}
-                  disabled={activity === "na"}
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue placeholder={t("predictor.activity.placeholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activityOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {t(o.label as never)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                  <Checkbox
-                    checked={activity === "na"}
-                    onCheckedChange={(c) => setActivity(c ? "na" : "")}
-                  />
-                  N/A
-                </label>
-              </div>
-            </div>
-          </FieldGroup>
+          />
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
             <Button onClick={onPredict} disabled={!ageValid}>
