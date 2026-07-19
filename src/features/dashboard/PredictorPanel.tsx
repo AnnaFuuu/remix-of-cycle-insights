@@ -48,7 +48,6 @@ const endocrine: FieldSpec[] = [
 
 const wearable: FieldSpec[] = [
   { key: "wristTempDelta", label: "predictor.wristTempDelta", unit: "°C vs baseline", placeholder: "e.g. +0.35", step: "0.01", allowNA: true },
-  { key: "restingHR", label: "predictor.restingHR", unit: "bpm", placeholder: "e.g. 62", allowNA: true, info: "resting heart rate" },
   { key: "hrv", label: "predictor.hrv", unit: "ms", placeholder: "e.g. 48", allowNA: true, info: "Heart rate variability (HRV) is the variation in the beat-to-beat interval. These include 5 minute granularity recordings of your HRV during a sleep." },
   { key: "respiratoryRate", label: "predictor.respRate", unit: "br/min", placeholder: "e.g. 15", step: "0.1", allowNA: true },
   { key: "sleepScore", label: "predictor.sleepScore", unit: "0–100", placeholder: "e.g. 78", allowNA: true },
@@ -63,7 +62,6 @@ const EMPTY: PredictorInput = {
   wristTempDelta: null,
   lh: null,
   estradiol: null,
-  restingHR: null,
   hrv: null,
   respiratoryRate: null,
   sleepScore: null,

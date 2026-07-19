@@ -18,7 +18,6 @@ const UI_TO_FEATURE: Record<string, string> = {
   wristTempDelta:   "wrist_temp_overnight_mean",
   lh:               "lh",
   estradiol:        "estrogen",
-  restingHR:        "rhr",
   hrv:              "hrv_mean",
   respiratoryRate:  "resp_rate_full",
   sleepScore:       "sleep_score",

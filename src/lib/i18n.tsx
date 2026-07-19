@@ -94,7 +94,7 @@ const en: Dict = {
   "predictor.wristTempDelta": "Overnight wrist temperature (Δ vs baseline)",
   "predictor.lh": "LH",
   "predictor.estradiol": "Estradiol",
-  "predictor.restingHR": "Resting HR",
+  
   "predictor.hrv": "HRV (RMSSD)",
   "predictor.wristTemp": "Wrist temperature Δ",
   "predictor.respRate": "Respiratory rate",
@@ -204,7 +204,7 @@ const zh: Dict = {
   "predictor.wristTempDelta": "夜间腕部温度（与基线差值）",
   "predictor.lh": "LH（促黄体素）",
   "predictor.estradiol": "雌二醇",
-  "predictor.restingHR": "静息心率",
+  
   "predictor.hrv": "HRV (RMSSD)",
   "predictor.wristTemp": "腕温变化 Δ",
   "predictor.respRate": "呼吸频率",
@@ -314,7 +314,7 @@ const fr: Dict = {
   "predictor.wristTempDelta": "Température du poignet nocturne (Δ vs référence)",
   "predictor.lh": "LH",
   "predictor.estradiol": "Estradiol",
-  "predictor.restingHR": "FC au repos",
+  
   "predictor.hrv": "VFC (RMSSD)",
   "predictor.wristTemp": "Δ température au poignet",
   "predictor.respRate": "Fréquence respiratoire",
@@ -424,7 +424,7 @@ const it: Dict = {
   "predictor.wristTempDelta": "Temperatura del polso notturna (Δ vs baseline)",
   "predictor.lh": "LH",
   "predictor.estradiol": "Estradiolo",
-  "predictor.restingHR": "FC a riposo",
+  
   "predictor.hrv": "HRV (RMSSD)",
   "predictor.wristTemp": "Δ temperatura polso",
   "predictor.respRate": "Frequenza respiratoria",
@@ -534,7 +534,7 @@ const de: Dict = {
   "predictor.wristTempDelta": "Nächtliche Handgelenktemperatur (Δ vs Baseline)",
   "predictor.lh": "LH",
   "predictor.estradiol": "Estradiol",
-  "predictor.restingHR": "Ruhepuls",
+  
   "predictor.hrv": "HRV (RMSSD)",
   "predictor.wristTemp": "Handgelenktemperatur Δ",
   "predictor.respRate": "Atemfrequenz",
