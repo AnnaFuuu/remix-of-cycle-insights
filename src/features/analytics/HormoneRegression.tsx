@@ -1,10 +1,11 @@
 import * as React from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { trainHormoneRegression, type RegressionResult, type AlgoName, type HormoneResult, type Metrics } from "@/lib/model/regression.functions";
+import { getPipelineRun } from "@/lib/model/pipeline-runs.functions";
 import { Sparkles, Trophy, Timer } from "lucide-react";
 
 const ALGO_STYLE: Record<AlgoName, string> = {
@@ -15,8 +16,15 @@ const ALGO_STYLE: Record<AlgoName, string> = {
 
 export function HormoneRegression() {
   const fn = useServerFn(trainHormoneRegression);
+  const getRun = useServerFn(getPipelineRun);
+  const cached = useQuery({
+    queryKey: ["pipeline-run", "regression"],
+    queryFn: () => getRun({ data: { step: "regression" } }),
+    refetchOnWindowFocus: false,
+  });
   const m = useMutation({ mutationFn: () => fn() });
-  const data: RegressionResult | undefined = m.data;
+  const data: RegressionResult | undefined = m.data ?? (cached.data?.result as RegressionResult | undefined);
+
 
   return (
     <div className="space-y-4 px-6 sm:px-8">
